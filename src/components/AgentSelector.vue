@@ -1,4 +1,3 @@
-
 <template>
   <div class="agent-selector">
     <button 
@@ -16,6 +15,14 @@
     >
       <i class="fas fa-book"></i>
       ELSA RECURSOS
+    </button>
+    <button 
+      class="agent-button content"
+      :class="{ active: selectedAgent === 'contenido' }"
+      @click="selectAgent('contenido')"
+    >
+      <i class="fas fa-file-alt"></i>
+      ELSA CONTENIDO
     </button>
   </div>
 </template>
@@ -60,6 +67,10 @@ const selectAgent = (agent: string) => {
 
 .resources {
   background-color: #34a853;
+}
+
+.content {
+  background-color: #f4b400; /* Added style for content button */
 }
 
 .active {

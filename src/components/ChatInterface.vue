@@ -1,33 +1,31 @@
-
 <template>
-  <div class="chat-container">
+  <div class="chat-interface">
     <div class="chat-header">
       <h2>{{ currentAgent }}</h2>
-      <div class="actions">
-        <button class="icon-button"><i class="fas fa-trash"></i></button>
-        <button class="icon-button"><i class="fas fa-cog"></i></button>
-        <button class="icon-button"><i class="fas fa-volume-up"></i></button>
-        <button class="icon-button"><i class="fas fa-times"></i></button>
+      <div class="header-controls">
+        <button class="toggle-btn" @click="isActive = !isActive">
+          {{ isActive ? 'Desactivar' : 'Activar' }}
+        </button>
       </div>
     </div>
-    
-    <div class="messages" ref="messagesContainer">
-      <div v-for="(message, index) in messages" :key="index" class="message">
-        {{ message }}
+    <div class="chat-messages" ref="messagesContainer" :class="{ inactive: !isActive }">
+      <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
+        {{ message.text }}
       </div>
     </div>
-
-    <div class="input-container">
+    <div class="chat-input" :class="{ inactive: !isActive }">
       <input 
+        type="text" 
         v-model="newMessage" 
         @keyup.enter="sendMessage"
-        placeholder="Escribe tu mensaje..."
-        type="text"
-      />
-      <button class="voice-button" @click="toggleVoiceInput">
-        <i class="fas fa-microphone"></i>
-      </button>
-      <button class="send-button" @click="sendMessage">
+        placeholder="Escribe tu mensaje aquí..."
+        :disabled="!isActive"
+      >
+      <label class="file-input">
+        <input type="file" @change="handleFileUpload" :disabled="!isActive">
+        <i class="fas fa-paperclip"></i>
+      </label>
+      <button @click="sendMessage" :disabled="!isActive">
         <i class="fas fa-paper-plane"></i>
       </button>
     </div>
@@ -35,100 +33,155 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 
 const props = defineProps<{
   currentAgent: string
-}>();
+}>()
 
-const messages = ref<string[]>([]);
-const newMessage = ref('');
-const isRecording = ref(false);
+const messages = ref<Array<{ text: string, type: string }>>([])
+const newMessage = ref('')
+const messagesContainer = ref<HTMLElement | null>(null)
+const isActive = ref(true)
 
 const sendMessage = () => {
-  if (newMessage.value.trim()) {
-    messages.value.push(newMessage.value);
-    newMessage.value = '';
-  }
-};
+  if (!isActive.value || !newMessage.value.trim()) return
 
-const toggleVoiceInput = () => {
-  isRecording.value = !isRecording.value;
-  // Implement voice recording logic here
-};
+  messages.value.push({
+    text: newMessage.value,
+    type: 'user'
+  })
+  newMessage.value = ''
+
+  // Simulate response
+  setTimeout(() => {
+    messages.value.push({
+      text: `Respuesta de ${props.currentAgent}`,
+      type: 'bot'
+    })
+  }, 1000)
+}
+
+const handleFileUpload = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    messages.value.push({
+      text: `Archivo adjunto: ${file.name}`,
+      type: 'user'
+    })
+  }
+}
 </script>
 
 <style scoped>
-.chat-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  height: 600px;
+.chat-interface {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .chat-header {
+  background-color: #f0f0f0;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
 }
 
-.actions {
+.header-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
-.icon-button {
-  background: none;
+.toggle-btn {
+  padding: 0.5rem 1rem;
   border: none;
+  border-radius: 4px;
+  background-color: #4CAF50;
+  color: white;
   cursor: pointer;
-  padding: 0.5rem;
 }
 
-.messages {
-  flex: 1;
+.toggle-btn:hover {
+  background-color: #45a049;
+}
+
+.chat-messages {
+  height: 400px;
   overflow-y: auto;
   padding: 1rem;
 }
 
+.chat-messages.inactive {
+  opacity: 0.5;
+}
+
 .message {
-  margin-bottom: 1rem;
+  margin: 0.5rem 0;
   padding: 0.5rem 1rem;
-  background: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
-.input-container {
+.message.user {
+  background-color: #e3f2fd;
+  margin-left: 20%;
+}
+
+.message.bot {
+  background-color: #f5f5f5;
+  margin-right: 20%;
+}
+
+.chat-input {
   display: flex;
-  gap: 0.5rem;
   padding: 1rem;
-  border-top: 1px solid #eee;
+  gap: 0.5rem;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
 }
 
-input {
+.chat-input.inactive {
+  opacity: 0.5;
+}
+
+.chat-input input[type="text"] {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
-.voice-button, .send-button {
+.file-input {
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  color: #666;
+}
+
+.file-input input[type="file"] {
+  display: none;
+}
+
+.file-input:hover {
+  color: #333;
+}
+
+button {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
+  background-color: #1976d2;
+  color: white;
   cursor: pointer;
 }
 
-.voice-button {
-  background: #4285f4;
-  color: white;
+button:hover {
+  background-color: #1565c0;
 }
 
-.send-button {
-  background: #34a853;
-  color: white;
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>
