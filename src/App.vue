@@ -1,29 +1,40 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import ChatInterface from './components/ChatInterface.vue'
-import FileUpload from './components/FileUpload.vue'
-</script>
 
 <template>
   <div class="app">
-    <h1>Vue + TypeScript App</h1>
-    <ChatInterface />
-    <FileUpload />
+    <AgentSelector @update:agent="updateAgent" />
+    <ChatInterface :currentAgent="currentAgent" />
   </div>
 </template>
 
-<style scoped>
+<script setup lang="ts">
+import { ref } from 'vue'
+import AgentSelector from './components/AgentSelector.vue'
+import ChatInterface from './components/ChatInterface.vue'
+
+const currentAgent = ref('ELSA ANALITICA')
+
+const updateAgent = (agent: string) => {
+  currentAgent.value = `ELSA ${agent.toUpperCase()}`
+}
+</script>
+
+<style>
+@import 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+
 .app {
   max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif; /* From original styles */
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
 }
 
-h1 {
-  text-align: center;
-  color: #2c3e50; /* From original styles */
-  margin-bottom: 0.5rem; /* From original styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+body {
+  background-color: #f5f5f5;
+}
 </style>

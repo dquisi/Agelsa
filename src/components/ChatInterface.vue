@@ -1,97 +1,134 @@
 
-<script setup lang="ts">
-import { ref } from 'vue'
-import ApiService from '../services/ApiService'
-
-const apiService = new ApiService()
-const message = ref('')
-const chatHistory = ref<Array<{type: 'user' | 'bot', content: string}>>([])
-
-const sendMessage = async () => {
-  if (!message.value.trim()) return
-  
-  chatHistory.value.push({ type: 'user', content: message.value })
-  
-  try {
-    const difyResponse = await apiService.sendToDify(message.value)
-    chatHistory.value.push({ type: 'bot', content: difyResponse })
-    
-    const openAIResponse = await apiService.sendToOpenAI(message.value)
-    chatHistory.value.push({ type: 'bot', content: openAIResponse })
-  } catch (error) {
-    console.error('Error:', error)
-    chatHistory.value.push({ type: 'bot', content: 'Error processing your request' })
-  }
-  
-  message.value = ''
-}
-</script>
-
 <template>
-  <div class="chat-interface">
-    <div class="chat-history">
-      <div v-for="(msg, index) in chatHistory" :key="index" :class="msg.type">
-        <p>{{ msg.content }}</p>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>{{ currentAgent }}</h2>
+      <div class="actions">
+        <button class="icon-button"><i class="fas fa-trash"></i></button>
+        <button class="icon-button"><i class="fas fa-cog"></i></button>
+        <button class="icon-button"><i class="fas fa-volume-up"></i></button>
+        <button class="icon-button"><i class="fas fa-times"></i></button>
       </div>
     </div>
-    <div class="input-area">
-      <input v-model="message" @keyup.enter="sendMessage" placeholder="Type your message..." />
-      <button @click="sendMessage">Send</button>
+    
+    <div class="messages" ref="messagesContainer">
+      <div v-for="(message, index) in messages" :key="index" class="message">
+        {{ message }}
+      </div>
+    </div>
+
+    <div class="input-container">
+      <input 
+        v-model="newMessage" 
+        @keyup.enter="sendMessage"
+        placeholder="Escribe tu mensaje..."
+        type="text"
+      />
+      <button class="voice-button" @click="toggleVoiceInput">
+        <i class="fas fa-microphone"></i>
+      </button>
+      <button class="send-button" @click="sendMessage">
+        <i class="fas fa-paper-plane"></i>
+      </button>
     </div>
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const props = defineProps<{
+  currentAgent: string
+}>();
+
+const messages = ref<string[]>([]);
+const newMessage = ref('');
+const isRecording = ref(false);
+
+const sendMessage = () => {
+  if (newMessage.value.trim()) {
+    messages.value.push(newMessage.value);
+    newMessage.value = '';
+  }
+};
+
+const toggleVoiceInput = () => {
+  isRecording.value = !isRecording.value;
+  // Implement voice recording logic here
+};
+</script>
+
 <style scoped>
-.chat-interface {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.chat-history {
-  height: 400px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-}
-
-.user, .bot {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.user {
-  background-color: #e3f2fd;
-  margin-left: 20%;
-}
-
-.bot {
-  background-color: #f5f5f5;
-  margin-right: 20%;
-}
-
-.input-area {
+.chat-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  height: 600px;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.message {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.input-container {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
 }
 
 input {
   flex: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 
-button {
-  padding: 8px 16px;
-  background-color: #4CAF50;
-  color: white;
+.voice-button, .send-button {
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #45a049;
+.voice-button {
+  background: #4285f4;
+  color: white;
+}
+
+.send-button {
+  background: #34a853;
+  color: white;
 }
 </style>
