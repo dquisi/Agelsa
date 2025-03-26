@@ -1,187 +1,207 @@
 <template>
   <div class="chat-interface">
-    <div class="chat-header">
-      <h2>{{ currentAgent }}</h2>
-      <div class="header-controls">
-        <button class="toggle-btn" @click="isActive = !isActive">
-          {{ isActive ? 'Desactivar' : 'Activar' }}
-        </button>
-      </div>
-    </div>
-    <div class="chat-messages" ref="messagesContainer" :class="{ inactive: !isActive }">
-      <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
+    <div class="messages" ref="messagesContainer">
+      <div v-for="(message, index) in messages" :key="index" :class="message.type">
         {{ message.text }}
       </div>
     </div>
-    <div class="chat-input" :class="{ inactive: !isActive }">
-      <input 
-        type="text" 
-        v-model="newMessage" 
-        @keyup.enter="sendMessage"
-        placeholder="Escribe tu mensaje aquí..."
-        :disabled="!isActive"
-      >
-      <label class="file-input">
-        <input type="file" @change="handleFileUpload" :disabled="!isActive">
-        <i class="fas fa-paperclip"></i>
-      </label>
-      <button @click="sendMessage" :disabled="!isActive">
-        <i class="fas fa-paper-plane"></i>
+    <div class="controls">
+      <button @click="toggleAudio" class="audio-toggle">
+        {{ audioEnabled ? '🔊 Audio ON' : '🔈 Audio OFF' }}
       </button>
+    </div>
+    <div class="input-area">
+      <input 
+        v-model="inputMessage" 
+        @keyup.enter="sendMessage"
+        placeholder="Escribe tu mensaje..."
+      />
+      <button @click="sendMessage">Enviar</button>
+      <button @click="toggleListening" class="voice-btn">
+        {{ isListening ? '🎤 Detener' : '🎤 Hablar' }}
+      </button>
+      <input 
+        type="file" 
+        @change="handleFileUpload" 
+        accept=".pdf,.doc,.docx,.txt"
+        class="file-input"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import ApiService from '../services/ApiService'
 
-const props = defineProps<{
-  currentAgent: string
-}>()
+const api = new ApiService()
+const messages = ref([])
+const inputMessage = ref('')
+const isListening = ref(false)
+const audioEnabled = ref(true)
+const recognition = new webkitSpeechRecognition()
+const messagesContainer = ref(null)
 
-const messages = ref<Array<{ text: string, type: string }>>([])
-const newMessage = ref('')
-const messagesContainer = ref<HTMLElement | null>(null)
-const isActive = ref(true)
+recognition.lang = 'es-ES'
+recognition.continuous = true
+recognition.interimResults = false
 
-const sendMessage = () => {
-  if (!isActive.value || !newMessage.value.trim()) return
+recognition.onresult = (event) => {
+  const result = event.results[event.results.length - 1]
+  if (result.isFinal) {
+    inputMessage.value = result[0].transcript
+    sendMessage()
+  }
+}
 
-  messages.value.push({
-    text: newMessage.value,
-    type: 'user'
-  })
-  newMessage.value = ''
+const toggleListening = () => {
+  if (isListening.value) {
+    recognition.stop()
+  } else {
+    recognition.start()
+  }
+  isListening.value = !isListening.value
+}
 
-  // Simulate response
-  setTimeout(() => {
-    messages.value.push({
-      text: `Respuesta de ${props.currentAgent}`,
-      type: 'bot'
-    })
-  }, 1000)
+const toggleAudio = () => {
+  audioEnabled.value = !audioEnabled.value
 }
 
 const handleFileUpload = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
+    // Handle file upload logic here
+    console.log('File selected:', file.name)
+  }
+}
+
+const sendMessage = async () => {
+  if (!inputMessage.value.trim()) return
+
+  const userMessage = {
+    text: inputMessage.value,
+    type: 'user-message'
+  }
+
+  messages.value.push(userMessage)
+
+  try {
+    const response = await api.sendToOpenAI(inputMessage.value)
+    const botMessage = {
+      text: response,
+      type: 'bot-message'
+    }
+    messages.value.push(botMessage)
+
+    // Text-to-speech for bot response only if audio is enabled
+    if (audioEnabled.value) {
+      const speech = new SpeechSynthesisUtterance(response)
+      speech.lang = 'es-ES'
+      window.speechSynthesis.speak(speech)
+    }
+
+  } catch (error) {
+    console.error('Error:', error)
     messages.value.push({
-      text: `Archivo adjunto: ${file.name}`,
-      type: 'user'
+      text: 'Lo siento, hubo un error al procesar tu mensaje.',
+      type: 'error-message'
     })
   }
+
+  inputMessage.value = ''
+  scrollToBottom()
+}
+
+const scrollToBottom = () => {
+  setTimeout(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  }, 100)
 }
 </script>
 
 <style scoped>
 .chat-interface {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.chat-header {
-  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.header-controls {
-  display: flex;
-  gap: 1rem;
-}
-
-.toggle-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-}
-
-.toggle-btn:hover {
-  background-color: #45a049;
-}
-
-.chat-messages {
-  height: 400px;
+.messages {
+  flex-grow: 1;
   overflow-y: auto;
+  margin-bottom: 1rem;
   padding: 1rem;
-}
-
-.chat-messages.inactive {
-  opacity: 0.5;
-}
-
-.message {
-  margin: 0.5rem 0;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-}
-
-.message.user {
-  background-color: #e3f2fd;
-  margin-left: 20%;
-}
-
-.message.bot {
-  background-color: #f5f5f5;
-  margin-right: 20%;
-}
-
-.chat-input {
-  display: flex;
-  padding: 1rem;
-  gap: 0.5rem;
-  background-color: #fff;
-  border-top: 1px solid #ccc;
-}
-
-.chat-input.inactive {
-  opacity: 0.5;
-}
-
-.chat-input input[type="text"] {
-  flex: 1;
-  padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-.file-input {
-  cursor: pointer;
-  padding: 0.5rem;
+.controls {
   display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.input-area {
+  display: flex;
+  gap: 0.5rem;
   align-items: center;
-  color: #666;
 }
 
-.file-input input[type="file"] {
-  display: none;
-}
-
-.file-input:hover {
-  color: #333;
+input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 button {
   padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
   border: none;
   border-radius: 4px;
-  background-color: #1976d2;
-  color: white;
   cursor: pointer;
 }
 
-button:hover {
-  background-color: #1565c0;
+.audio-toggle {
+  background-color: #2196F3;
 }
 
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.voice-btn {
+  background-color: #9c27b0;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.file-input {
+  max-width: 200px;
+}
+
+.user-message {
+  background-color: #e3f2fd;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+  text-align: right;
+}
+
+.bot-message {
+  background-color: #f5f5f5;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
 }
 </style>
