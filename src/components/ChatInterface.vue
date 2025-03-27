@@ -1,44 +1,51 @@
-
 <template>
-  <div class="chat-container">
-    <div class="messages-container" ref="messagesContainer">
-      <div v-for="(message, index) in messages" :key="index" 
-           :class="['message', message.isUser ? 'user-message' : 'bot-message']">
-        <p>{{ message.text }}</p>
+  <div class="chat-interface">
+    <div class="chat-header">
+      <div class="config-menu">
+        <button class="config-button" @click="toggleConfig">
+          ⚙️ ELSA Config
+        </button>
+        <div v-if="showConfig" class="config-panel">
+          <div class="config-option">
+            <label>Analytics Mode:</label>
+            <select v-model="analyticsMode">
+              <option value="basic">Basic Analysis</option>
+              <option value="detailed">Detailed Analysis</option>
+              <option value="advanced">Advanced Analytics</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="input-container">
-      <div class="attachment-container">
-        <input type="file" ref="fileInput" @change="handleFileUpload" class="file-input" />
-        <button class="icon-button" @click="triggerFileInput">
-          <i class="fas fa-paperclip"></i>
-        </button>
+
+    <div class="messages" ref="messagesContainer">
+      <div v-for="(message, index) in messages" :key="index" :class="['message', message.type]">
+        {{ message.content }}
       </div>
+    </div>
 
-      <textarea 
-        v-model="newMessage" 
-        @keyup.enter="sendMessage"
-        placeholder="Type a message..."
-        rows="1"
-        ref="messageInput"
-      ></textarea>
-
-      <div class="action-buttons">
-        <button class="icon-button" @click="toggleMute">
-          <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
-        </button>
-        
-        <button v-if="isRecording" @click="stopRecording" class="icon-button recording">
-          <i class="fas fa-stop"></i>
-        </button>
-        <button v-else @click="startRecording" class="icon-button">
-          <i class="fas fa-microphone"></i>
-        </button>
-
-        <button @click="sendMessage" class="send-button" :disabled="!newMessage.trim()">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+    <div class="input-container">
+      <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none">
+      <div class="control-panel">
+        <div class="action-buttons">
+          <button class="icon-button" @click="toggleVoiceRecording" :class="{ 'active': isRecording }">
+            {{ isRecording ? '⏹️' : '🎤' }}
+          </button>
+          <button class="icon-button" @click="$refs.fileInput.click()">📎</button>
+          <button class="icon-button" @click="toggleMute">
+            {{ isMuted ? '🔇' : '🔊' }}
+          </button>
+        </div>
+        <div class="message-input">
+          <textarea
+            v-model="newMessage"
+            @keyup.enter="sendMessage"
+            placeholder="Type your message..."
+          ></textarea>
+          <button class="send-button" @click="sendMessage">
+            <span>Send</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -50,7 +57,7 @@ import ApiService from '../services/ApiService'
 
 const props = defineProps<{
   currentAgent: string
-  messages: Array<{text: string, isUser: boolean}>
+  messages: Array<{text: string, isUser: boolean, type: string}>
 }>()
 
 const emit = defineEmits(['update:messages'])
@@ -61,6 +68,8 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const isRecording = ref(false)
 const isMuted = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const showConfig = ref(false);
+const analyticsMode = ref('basic');
 let mediaRecorder: MediaRecorder | null = null
 
 const scrollToBottom = () => {
@@ -75,17 +84,21 @@ const toggleMute = () => {
   isMuted.value = !isMuted.value
 }
 
+const toggleConfig = () => {
+  showConfig.value = !showConfig.value;
+}
+
 const startRecording = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaRecorder = new MediaRecorder(stream)
     isRecording.value = true
-    
+
     mediaRecorder.ondataavailable = async (event) => {
       const audioBlob = new Blob([event.data], { type: 'audio/wav' })
       // Handle the audio blob - you can send it to your API here
     }
-    
+
     mediaRecorder.start()
   } catch (err) {
     console.error('Error accessing microphone:', err)
@@ -97,6 +110,14 @@ const stopRecording = () => {
     mediaRecorder.stop()
     isRecording.value = false
     mediaRecorder.stream.getTracks().forEach(track => track.stop())
+  }
+}
+
+const toggleVoiceRecording = () => {
+  if (isRecording.value) {
+    stopRecording();
+  } else {
+    startRecording();
   }
 }
 
@@ -114,16 +135,16 @@ const handleFileUpload = (event: Event) => {
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
-  
-  const userMessage = { text: newMessage.value, isUser: true }
+
+  const userMessage = { text: newMessage.value, isUser: true, type: 'user' }
   const updatedMessages = [...props.messages, userMessage]
   emit('update:messages', updatedMessages)
-  
+
   newMessage.value = ''
-  
+
   try {
     const response = await api.sendToDify(userMessage.text)
-    const botMessage = { text: response.answer, isUser: false }
+    const botMessage = { text: response.answer, isUser: false, type: 'bot' }
     emit('update:messages', [...updatedMessages, botMessage])
   } catch (error) {
     console.error('Error sending message:', error)
@@ -134,20 +155,136 @@ onMounted(scrollToBottom)
 </script>
 
 <style scoped>
-.chat-container {
-  flex: 1;
+.chat-interface {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #fff;
+  background-color: #fff;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-.messages-container {
+.chat-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  background: #fcfcfc;
+}
+
+.config-menu {
+  position: relative;
+}
+
+.config-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.config-button:hover {
+  background: #f8f9fa;
+}
+
+.config-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  padding: 1rem;
+  min-width: 200px;
+  z-index: 1000;
+}
+
+.config-option {
+  margin-bottom: 0.5rem;
+}
+
+.config-option label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.config-option select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.control-panel {
+  padding: 1rem;
+  background: #fcfcfc;
+  border-top: 1px solid #eee;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.icon-button {
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  background: #f8f9fa;
+}
+
+.icon-button.active {
+  background: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.send-button {
+  padding: 0.6rem 1.2rem;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-button:hover {
+  background: #43a047;
+  transform: translateY(-1px);
+}
+
+.message-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.message-input textarea {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  resize: none;
+  font-size: 0.95rem;
+}
+
+.messages {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 1rem;
   scroll-behavior: smooth;
 }
 
@@ -157,6 +294,7 @@ onMounted(scrollToBottom)
   padding: 0.75rem 1rem;
   border-radius: 12px;
   line-height: 1.4;
+  word-break: break-word;
 }
 
 .user-message {
@@ -169,89 +307,5 @@ onMounted(scrollToBottom)
   margin-right: auto;
   background: #F0F0F0;
   color: #333;
-}
-
-.input-container {
-  padding: 1rem;
-  background: #fff;
-  border-top: 1px solid #eee;
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
-textarea {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  resize: none;
-  font-family: inherit;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  max-height: 120px;
-  transition: all 0.2s ease;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.icon-button {
-  background: transparent;
-  border: none;
-  padding: 0.5rem;
-  cursor: pointer;
-  color: #666;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-button:hover {
-  background: #f5f5f5;
-  color: #333;
-}
-
-.recording {
-  color: #FF3B30;
-  animation: pulse 1.5s infinite;
-}
-
-.send-button {
-  background: #007AFF;
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.send-button:hover {
-  transform: scale(1.05);
-}
-
-.send-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.file-input {
-  display: none;
-}
-
-.attachment-container {
-  position: relative;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 </style>

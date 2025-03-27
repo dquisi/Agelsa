@@ -186,17 +186,33 @@ if (chatHistory.value.length === 0) {
 }
 
 .toggle-history-btn {
-  background: transparent;
-  border: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
   cursor: pointer;
-  padding: 0.5rem;
-  color: #666;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.toggle-history-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .toggle-history-btn:hover {
-  color: #333;
-  transform: scale(1.1);
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
 * {
