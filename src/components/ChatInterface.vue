@@ -127,15 +127,8 @@ const toggleVoiceRecording = () => {
 class ApiService {
   async sendMessageStream(message: string, callback: (chunk: string) => void) {
     try {
-      const response = await axios.post('/api/v1/chat/completions', {
-        message,
-        agent: selectedAgent.value,
-        context: selectedAgent.value === 'analytics' ? 'data_analysis' :
-          selectedAgent.value === 'resources' ? 'resource_management' :
-            selectedAgent.value === 'content' ? 'content_generation' : 'default'
-      }, {
-        responseType: 'stream'
-      });
+      const apiService = new ApiService()
+      await apiService.sendMessageStream(message, callback)
 
       const reader = response.data.getReader();
       while (true) {
