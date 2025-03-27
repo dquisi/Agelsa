@@ -31,26 +31,27 @@ export default class ApiService {
   }
 
   async convertAudioToText(audioBlob: Blob): Promise<string> {
-    const formData = new FormData();
-    formData.append("file", audioBlob, "recording.wav");
-
     try {
-      const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
+      const formData = new FormData();
+      formData.append("audio", audioBlob);
+
+      const response = await fetch(`${this.baseUrl}/convert-audio`, {
         method: "POST",
+        body: formData,
         headers: {
           Authorization: `Bearer ${this.agentToken}`,
         },
-        body: formData,
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
-      return data.text || "";
+      return data.text;
     } catch (error) {
       console.error("Error converting audio to text:", error);
-      throw error;
+      return "Error al convertir audio a texto. Por favor, intente nuevamente.";
     }
   }
 
