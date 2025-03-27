@@ -5,7 +5,7 @@
         <button @click="toggleHistory" class="toggle-history-btn">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="sidebar" :class="{ 'hidden': !showHistory }">
+        <div class="sidebar" :class="{ 'hidden': !showHistory, 'slide': true }">
           <div class="sidebar-header">
             <h3>Chat History</h3>
           </div>
@@ -111,9 +111,14 @@ if (chatHistory.value.length === 0) {
   display: flex;
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 280px;
   background-color: #fff;
   padding: 1.25rem;
@@ -121,6 +126,11 @@ if (chatHistory.value.length === 0) {
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
+  z-index: 100;
+}
+
+.slide {
+  transform: translateX(0);
 }
 
 .sidebar.hidden {
