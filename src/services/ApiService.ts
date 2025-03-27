@@ -114,26 +114,31 @@ export default class ApiService {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader available");
 
-      let buffer = "";
+      let buffer = '';
+      let lastMessage = '';
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += new TextDecoder().decode(value);
-        const lines = buffer.split("\n");
+        const lines = buffer.split('\n');
 
         for (let i = 0; i < lines.length - 1; i++) {
-          if (lines[i].trim() === "") continue;
+          if (lines[i].trim() === '') continue;
 
           try {
-            const dataStr = lines[i].replace("data: ", "");
+            const dataStr = lines[i].replace('data: ', '');
             const data = JSON.parse(dataStr);
 
-            if (data.event === "agent_thought" && data.thought) {
-              onChunk(data.thought);
+            if (data.event === 'agent_thought' && data.thought) {
+              // Solo enviar si el mensaje es diferente al último
+              if (data.thought !== lastMessage) {
+                lastMessage = data.thought;
+                onChunk(data.thought);
+              }
             }
           } catch (e) {
-            console.error("Error parsing chunk:", e);
+            console.error('Error parsing chunk:', e);
           }
         }
 
