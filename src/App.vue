@@ -1,31 +1,51 @@
 
 <template>
   <div class="app">
-    <div class="main-container">
-      <div class="top-bar">
-        <button @click="toggleConfig" class="icon-btn">
-          <i class="fas fa-cog"></i>
-        </button>
+    <div class="chat-history" :class="{ 'hidden': !showHistory }">
+      <div class="history-header">
+        <h3>Chat History</h3>
       </div>
-      <ChatInterface 
-        :messages="currentMessages"
-        @update:messages="updateMessages" 
-      />
-      <div class="actions" :class="{ 'hidden': hideButtons }">
-        <button @click="toggleButtons" class="icon-btn toggle-btn">
-          <i :class="hideButtons ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
-        </button>
-        <button @click="newChat" class="icon-btn primary">
-          <i class="fas fa-plus"></i>
-        </button>
+      <div class="history-list">
         <button 
           v-for="(chat, index) in chatHistory" 
           :key="index"
           @click="loadChat(index)"
-          class="icon-btn"
+          class="history-item"
           :class="{ 'active': currentChatIndex === index }"
         >
-          {{ index + 1 }}
+          Chat {{ index + 1 }}
+        </button>
+      </div>
+    </div>
+    
+    <div class="main-container">
+      <div class="top-bar">
+        <button @click="toggleHistory" class="icon-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="spacer"></div>
+        <button @click="toggleConfig" class="icon-btn" title="Settings">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+
+      <ChatInterface 
+        :messages="currentMessages"
+        @update:messages="updateMessages" 
+      />
+
+      <div class="actions">
+        <button @click="newChat" class="icon-btn" title="New Chat">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button class="icon-btn" title="Voice">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button class="icon-btn" title="Attach File">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <button class="icon-btn" title="Audio">
+          <i class="fas fa-headphones"></i>
         </button>
       </div>
     </div>
@@ -39,10 +59,10 @@ import ChatInterface from './components/ChatInterface.vue'
 const chatHistory = ref<Array<Array<{text: string, isUser: boolean}>>>([])
 const currentChatIndex = ref(0)
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
-const hideButtons = ref(false)
+const showHistory = ref(false)
 
-const toggleButtons = () => {
-  hideButtons.value = !hideButtons.value
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value
 }
 
 const toggleConfig = () => {
@@ -81,39 +101,85 @@ if (chatHistory.value.length === 0) {
 
 .app {
   height: 100vh;
+  display: flex;
   background-color: #ffffff;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.main-container {
-  height: 100vh;
+.chat-history {
+  width: 250px;
+  background: #f8f9fa;
+  border-right: 1px solid #eee;
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
 }
 
-.top-bar {
+.chat-history.hidden {
+  transform: translateX(-100%);
+}
+
+.history-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
   padding: 0.5rem;
+}
+
+.history-item {
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.history-item:hover {
+  background: #eee;
+}
+
+.history-item.active {
+  background: #e9ecef;
+  color: #4CAF50;
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.top-bar {
+  padding: 0.75rem;
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
 }
 
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: #f8f9fa;
-  border-top: 1px solid #eee;
-  transition: transform 0.3s ease;
+.spacer {
+  flex: 1;
 }
 
-.actions.hidden {
-  transform: translateY(100%);
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  justify-content: center;
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   background: white;
@@ -122,7 +188,7 @@ if (chatHistory.value.length === 0) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 1rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   transition: all 0.2s;
 }
@@ -130,26 +196,6 @@ if (chatHistory.value.length === 0) {
 .icon-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.icon-btn.primary {
-  background: #4CAF50;
-  color: white;
-}
-
-.icon-btn.active {
-  background: #e9ecef;
-  color: #4CAF50;
-}
-
-.toggle-btn {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  border: 1px solid #eee;
-  width: 30px;
-  height: 30px;
+  background: #f8f9fa;
 }
 </style>
