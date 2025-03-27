@@ -1,70 +1,115 @@
 <template>
   <div class="chat-interface">
     <div class="messages" ref="messagesContainer">
-      <div 
-        v-for="(message, index) in messages" 
-        :key="index"
-        :class="['message', message.isUser ? 'user' : 'bot']"
-      >
-        {{ message.text }}
+      <div v-for="(message, index) in messages" :key="index" :class="['message', message.isUser ? 'user' : 'bot']">
+        <div v-if="message.type === 'file'" class="file-message">
+          <a :href="message.url" target="_blank">📎 {{ message.filename }}</a>
+        </div>
+        <div v-else-if="message.type === 'audio'" class="audio-message">
+          <audio controls :src="message.url"></audio>
+        </div>
+        <div v-else>{{ message.text }}</div>
       </div>
     </div>
 
     <div class="input-container">
-      <textarea 
-        v-model="newMessage" 
-        @keyup.enter="sendMessage"
-        placeholder="Type your message..."
-        rows="1"
-      ></textarea>
-      <div class="button-group">
-        <button @click="toggleMute" class="action-button">
-          <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
-        </button>
-        <button @click="sendMessage" class="send-button">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
+      <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type your message..." type="text"/>
+      <label class="attach-file">
+        📎
+        <input type="file" @change="handleFileAttachment" style="display: none"/>
+      </label>
+      <button @click="toggleVoiceRecording" :class="['voice-btn', { 'recording': isRecording }]">
+        🎤
+      </button>
+      <button @click="sendMessage">Send</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, defineProps, defineEmits, watch } from 'vue'
 
 const props = defineProps<{
   currentAgent: string
-  messages: Array<{text: string, isUser: boolean}>
+  messages: Array<{text?: string, isUser: boolean, type?: string, url?: string, filename?: string}>
 }>()
 
 const emit = defineEmits(['update:messages'])
 const newMessage = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
-const isMuted = ref(false)
-
-const toggleMute = () => {
-  isMuted.value = !isMuted.value
-}
+const isRecording = ref(false)
+let mediaRecorder: MediaRecorder | null = null
+let audioChunks: BlobPart[] = []
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
 
-  const updatedMessages = [...props.messages, { text: newMessage.value, isUser: true }]
+  const updatedMessages = [...props.messages]
+  updatedMessages.push({ text: newMessage.value, isUser: true })
   emit('update:messages', updatedMessages)
   newMessage.value = ''
+}
 
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+const handleFileAttachment = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+    const url = URL.createObjectURL(file)
+    const updatedMessages = [...props.messages]
+    updatedMessages.push({ 
+      type: 'file',
+      url,
+      filename: file.name,
+      isUser: true 
+    })
+    emit('update:messages', updatedMessages)
   }
 }
 
-watch(() => props.messages, async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+const toggleVoiceRecording = async () => {
+  if (!isRecording.value) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorder = new MediaRecorder(stream)
+      audioChunks = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data)
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+        const audioUrl = URL.createObjectURL(audioBlob)
+        const updatedMessages = [...props.messages]
+        updatedMessages.push({ 
+          type: 'audio',
+          url: audioUrl,
+          isUser: true 
+        })
+        emit('update:messages', updatedMessages)
+      }
+
+      mediaRecorder.start()
+      isRecording.value = true
+    } catch (err) {
+      console.error('Error accessing microphone:', err)
+    }
+  } else {
+    if (mediaRecorder) {
+      mediaRecorder.stop()
+      mediaRecorder.stream.getTracks().forEach(track => track.stop())
+    }
+    isRecording.value = false
   }
-})
+}
+
+watch(() => props.messages, () => {
+  setTimeout(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  }, 100)
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -72,85 +117,52 @@ watch(() => props.messages, async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: white;
-  height: 100%;
-}
-
-.messages {
-  flex: 1;
-  overflow-y: auto;
   padding: 1rem;
+  gap: 1rem;
 }
 
-.message {
-  max-width: 80%;
-  margin: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  word-wrap: break-word;
-}
-
-.message.user {
-  background-color: #e3f2fd;
-  margin-left: auto;
-  border-bottom-right-radius: 0.25rem;
-}
-
-.message.bot {
-  background-color: #f5f5f5;
-  margin-right: auto;
-  border-bottom-left-radius: 0.25rem;
-}
-
-.input-container {
-  padding: 1rem;
-  border-top: 1px solid #eee;
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  background: white;
-}
-
-textarea {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
+.file-message {
+  padding: 0.5rem;
+  background: #f0f0f0;
   border-radius: 8px;
-  resize: none;
-  font-family: inherit;
-  font-size: 1rem;
-  outline: none;
 }
 
-.button-group {
-  display: flex;
-  gap: 0.5rem;
+.file-message a {
+  color: #2c3e50;
+  text-decoration: none;
 }
 
-.action-button {
-  padding: 0.75rem;
-  border: none;
-  border-radius: 8px;
-  background: #f5f5f5;
+.audio-message {
+  padding: 0.5rem;
+}
+
+.audio-message audio {
+  max-width: 300px;
+}
+
+.attach-file {
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.5rem;
+  font-size: 1.2rem;
 }
 
-.action-button:hover {
-  background: #e0e0e0;
-}
-
-.send-button {
-  padding: 0.75rem 1rem;
+.voice-btn {
+  background: none;
   border: none;
-  border-radius: 8px;
-  background: #4CAF50;
-  color: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
 }
 
-.send-button:hover {
-  background: #45a049;
+.voice-btn.recording {
+  color: red;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 </style>
