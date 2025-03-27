@@ -1,7 +1,10 @@
 
 <template>
   <div class="app">
-    <div class="sidebar">
+    <button class="toggle-history" @click="showHistory = !showHistory">
+      <i class="fas" :class="showHistory ? 'fa-times' : 'fa-bars'"></i>
+    </button>
+    <div class="sidebar" :class="{ 'hidden': !showHistory }">
       <div class="chat-list">
         <button class="new-chat" @click="createNewChat">
           <i class="fas fa-plus"></i> New Chat
@@ -37,6 +40,7 @@ interface Chat {
 }
 
 
+const showHistory = ref(false)
 const currentAgent = ref('default')
 const chats = ref<Chat[]>([{ messages: [] }])
 const currentChatIndex = ref(0)
@@ -80,12 +84,43 @@ const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
   display: flex;
 }
 
+.toggle-history {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-history:hover {
+  background: #f5f5f5;
+}
+
 .sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
   width: 260px;
   background: #ffffff;
   border-right: 1px solid #eaeaea;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease;
+  z-index: 50;
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
 }
 
 .chat-list {
