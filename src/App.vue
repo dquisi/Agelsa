@@ -28,19 +28,19 @@
         </button>
       </div>
 
+      <div class="chat-controls">
+        <button class="icon-btn" title="Voice">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button @click="toggleConfig" class="icon-btn" title="Settings">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+
       <ChatInterface 
         :messages="currentMessages"
         @update:messages="updateMessages" 
       />
-
-      <div class="actions" style="position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem; background: white; border-top: 1px solid #eee;">
-        <button class="icon-btn" title="Voice" style="margin: 0 0.5rem;">
-          <i class="fas fa-microphone"></i>
-        </button>
-        <button @click="toggleConfig" class="icon-btn" title="Settings" style="margin: 0 0.5rem;">
-          <i class="fas fa-cog"></i>
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -130,15 +130,24 @@ if (chatHistory.value.length === 0) {
 }
 
 .history-item {
-  width: 100%;
-  padding: 0.75rem;
-  text-align: left;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: 50%;
   cursor: pointer;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   color: #333;
+}
+
+.history-item::before {
+  content: '\f15c';
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 400;
 }
 
 .history-item:hover {
@@ -148,6 +157,14 @@ if (chatHistory.value.length === 0) {
 .history-item.active {
   background: #e6f2ff;
   color: #0066cc;
+}
+
+.chat-controls {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  justify-content: flex-end;
+  background: #fff;
 }
 
 .main-container {
