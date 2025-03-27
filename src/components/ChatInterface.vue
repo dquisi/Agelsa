@@ -1,6 +1,18 @@
+
 <template>
   <div class="chat-interface">
-    <div class="messages" ref="messagesContainer">
+    <div class="header">
+      <button class="icon-button" @click="toggleHistory">
+        <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
+      </button>
+      <select v-model="selectedAgent" class="agent-select">
+        <option value="default">Default Agent</option>
+        <option value="gpt4">GPT-4</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+
+    <div class="messages" ref="messagesContainer" v-show="showHistory">
       <div v-for="(message, index) in messages" 
            :key="index" 
            :class="['message', message.isUser ? 'user-message' : 'bot-message']">
@@ -16,13 +28,17 @@
           placeholder="Type your message..."
         ></textarea>
         <div class="action-buttons">
+          <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none">
           <button class="icon-button" @click="toggleMute" :class="{ 'active': isMuted }">
             <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
           </button>
           <button class="icon-button" @click="toggleVoiceRecording" :class="{ 'active': isRecording }">
             <i class="fas fa-microphone"></i>
           </button>
-          <button class="icon-button" @click="sendMessage">
+          <button class="icon-button" @click="$refs.fileInput.click()">
+            <i class="fas fa-paperclip"></i>
+          </button>
+          <button class="icon-button primary" @click="sendMessage">
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
@@ -32,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
 
 const props = defineProps<{
@@ -41,12 +57,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:messages'])
-
 const newMessage = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
 const isRecording = ref(false)
 const isMuted = ref(false)
-let mediaRecorder: MediaRecorder | null = null
+const showHistory = ref(true)
+const selectedAgent = ref(props.currentAgent)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const scrollToBottom = () => {
   if (messagesContainer.value) {
@@ -54,11 +71,28 @@ const scrollToBottom = () => {
   }
 }
 
-watch(() => props.messages, scrollToBottom, { deep: true })
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value
+}
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value
 }
+
+const handleFileUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+    const reader = new FileReader()
+    reader.onload = () => {
+      const fileMessage = { text: `File uploaded: ${file.name}`, isUser: true }
+      emit('update:messages', [...props.messages, fileMessage])
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+watch(() => props.messages, scrollToBottom, { deep: true })
 
 const startRecording = async () => {
   try {
@@ -68,7 +102,6 @@ const startRecording = async () => {
 
     mediaRecorder.ondataavailable = async (event) => {
       const audioBlob = new Blob([event.data], { type: 'audio/wav' })
-      // Handle audio here
     }
 
     mediaRecorder.start()
@@ -103,7 +136,7 @@ const sendMessage = async () => {
   try {
     const response = await axios.post('/api/v1/chat/completions', {
       message: newMessage.value,
-      agent: props.currentAgent
+      agent: selectedAgent.value
     })
 
     if (response.data && !isMuted.value) {
@@ -117,6 +150,8 @@ const sendMessage = async () => {
   newMessage.value = ''
 }
 
+let mediaRecorder: MediaRecorder | null = null
+
 onMounted(scrollToBottom)
 </script>
 
@@ -125,6 +160,21 @@ onMounted(scrollToBottom)
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: #fff;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.agent-select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
   background: #fff;
 }
 
@@ -162,12 +212,12 @@ onMounted(scrollToBottom)
 
 .message-input {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: flex-end;
 }
 
 .message-input textarea {
-  flex: 1;
+  width: 100%;
   padding: 0.8rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -179,6 +229,7 @@ onMounted(scrollToBottom)
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .icon-button {
@@ -202,5 +253,14 @@ onMounted(scrollToBottom)
 .icon-button.active {
   background: #0066cc;
   color: white;
+}
+
+.icon-button.primary {
+  background: #007AFF;
+  color: white;
+}
+
+.icon-button.primary:hover {
+  background: #0066cc;
 }
 </style>

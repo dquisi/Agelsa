@@ -1,10 +1,11 @@
+
 <template>
   <div class="app">
     <div class="chat-container">
       <ChatInterface 
         :messages="currentMessages"
         @update:messages="updateMessages"
-        current-agent="default"
+        :current-agent="currentAgent"
       />
     </div>
   </div>
@@ -15,22 +16,11 @@ import { ref } from 'vue'
 import ChatInterface from './components/ChatInterface.vue'
 
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
-const newMessage = ref('')
+const currentAgent = ref('default')
 
 const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
   currentMessages.value = messages
 }
-
-const sendMessage = () => {
-  if (newMessage.value.trim()) {
-    currentMessages.value.push({
-      text: newMessage.value,
-      isUser: true
-    })
-    newMessage.value = ''
-  }
-}
-
 </script>
 
 <style>
