@@ -135,10 +135,11 @@ watch(
 .chat-interface {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 150px);
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 100%;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .messages {

@@ -85,14 +85,16 @@ if (chatHistory.value.length === 0) {
 .app {
   display: flex;
   height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .sidebar {
-  width: 250px;
+  width: 280px;
   background-color: #fff;
-  padding: 1rem;
-  border-right: 1px solid #eee;
+  padding: 1.25rem;
+  border-right: 1px solid rgba(0,0,0,0.1);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
@@ -135,25 +137,31 @@ if (chatHistory.value.length === 0) {
 
 .chat-item {
   width: 100%;
-  padding: 0.5rem;
-  margin: 0.25rem 0;
+  padding: 0.75rem 1rem;
+  margin: 0.375rem 0;
   border: none;
-  background-color: #f5f5f5;
-  border-radius: 4px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  color: #2c3e50;
 }
 
 .chat-item:hover {
-  background-color: #eee;
+  background-color: #e9ecef;
+  transform: translateX(4px);
 }
 
 .new-chat-btn {
-  padding: 0.75rem;
+  padding: 0.875rem;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -167,19 +175,33 @@ if (chatHistory.value.length === 0) {
 
 .toggle-history-btn {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
+  top: 1.25rem;
+  left: 1.25rem;
   z-index: 1000;
   background: #fff;
   border: none;
-  border-radius: 4px;
-  padding: 0.5rem;
+  border-radius: 50%;
+  padding: 0.75rem;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toggle-history-btn:hover {
-  background: #f5f5f5;
+  background: #f8f9fa;
+  transform: scale(1.05);
+}
+
+.sidebar-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
 }
 
 * {
