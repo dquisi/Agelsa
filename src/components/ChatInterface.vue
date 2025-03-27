@@ -5,9 +5,6 @@
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
       </button>
-      <button v-if="showHistory" class="new-chat" @click="$emit('new-chat')">
-        <i class="fas fa-plus"></i> New Chat
-      </button>
       <select v-model="selectedAgent" class="agent-select">
         <option value="default">Default Agent</option>
         <option value="gpt4">GPT-4</option>
