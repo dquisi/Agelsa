@@ -116,12 +116,30 @@ export default class ApiService {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader available");
 
+      let buffer = '';
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = new TextDecoder().decode(value);
-        onChunk(chunk);
+        buffer += new TextDecoder().decode(value);
+        const lines = buffer.split('\n');
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          if (lines[i].trim() === '') continue;
+
+          try {
+            const dataStr = lines[i].replace('data: ', '');
+            const data = JSON.parse(dataStr);
+
+            if (data.event === 'agent_thought' && data.thought) {
+              onChunk(data.thought);
+            }
+          } catch (e) {
+            console.error('Error parsing chunk:', e);
+          }
+        }
+
+        buffer = lines[lines.length - 1];
       }
     } catch (error) {
       console.error("Error in streaming:", error);
