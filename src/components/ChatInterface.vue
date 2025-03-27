@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="input-area">
-      <div class="controls">
+      <div class="chat-controls">
         <button 
           class="control-btn"
           @click="toggleAudio"
@@ -25,9 +25,14 @@
         placeholder="Type your message..."
         class="message-input"
       />
-      <button @click="sendMessage" class="send-btn">
-        <i class="fas fa-paper-plane"></i>
-      </button>
+      <div class="button-group">
+        <button @click="generatePrompt" class="generate-btn">
+          <i class="fas fa-magic"></i> Generate
+        </button>
+        <button @click="sendMessage" class="send-btn">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
       <input
         type="file"
         ref="fileInput"
@@ -58,6 +63,7 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 const toggleAudio = () => {
   isAudioEnabled.value = !isAudioEnabled.value
+  // Add audio toggling logic here if needed (e.g., play/pause sound)
 }
 
 const sendMessage = async () => {
@@ -73,6 +79,15 @@ const sendMessage = async () => {
     emit('update:messages', [...updatedMessages, botResponse])
   }, 1000)
 }
+
+const generatePrompt = () => {
+  // Implement logic to generate a prompt from chat history here.
+  // This would likely involve accessing and processing the `messages` array.
+  // For example:
+  const lastMessage = props.messages[props.messages.length -1];
+  newMessage.value = `Based on the previous conversation: ${lastMessage.text}, what is the next step?`;
+}
+
 
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -143,9 +158,16 @@ watch(
   font-size: 1rem;
 }
 
+.chat-controls {
+  padding: 0.5rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .control-btn,
 .send-btn,
-.attachment-btn {
+.attachment-btn,
+.generate-btn {
   padding: 0.75rem;
   border: none;
   border-radius: 4px;
@@ -158,7 +180,8 @@ watch(
 
 .control-btn:hover,
 .send-btn:hover,
-.attachment-btn:hover {
+.attachment-btn:hover,
+.generate-btn:hover {
   background: #eee;
 }
 
@@ -175,4 +198,27 @@ watch(
 .send-btn:hover {
   background: #45a049;
 }
+
+.generate-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #666;
+}
+
+.control-btn:hover {
+  color: #333;
+}
+
 </style>

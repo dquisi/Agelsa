@@ -1,8 +1,13 @@
 
 <template>
   <div class="app">
-    <div class="sidebar">
-      <h3>Chat History</h3>
+    <div class="sidebar" :class="{ 'hidden': !showHistory }">
+      <div class="sidebar-header">
+        <h3>Chat History</h3>
+        <button @click="toggleSound" class="icon-btn">
+          <i :class="['fas', isSoundEnabled ? 'fa-volume-up' : 'fa-volume-mute']"></i>
+        </button>
+      </div>
       <div class="chat-list">
         <button 
           v-for="(chat, index) in chatHistory" 
@@ -37,6 +42,12 @@ const currentAgent = ref('ELSA ANALITICA')
 const chatHistory = ref<Array<Array<{text: string, isUser: boolean}>>>([])
 const currentChatIndex = ref(0)
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
+const isSoundEnabled = ref(true)
+const showHistory = ref(true)
+
+const toggleSound = () => {
+  isSoundEnabled.value = !isSoundEnabled.value
+}
 
 const updateAgent = (agent: string) => {
   currentAgent.value = `ELSA ${agent.toUpperCase()}`
@@ -80,6 +91,30 @@ if (chatHistory.value.length === 0) {
   border-right: 1px solid #eee;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.hidden {
+  transform: translateX(-250px);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #666;
+}
+
+.icon-btn:hover {
+  color: #333;
 }
 
 .main-content {
