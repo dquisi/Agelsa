@@ -1,12 +1,12 @@
 
 <template>
   <div class="app">
+    <button @click="toggleHistory" class="toggle-history-btn">
+      <i class="fas fa-bars"></i>
+    </button>
     <div class="sidebar" :class="{ 'hidden': !showHistory }">
       <div class="sidebar-header">
         <h3>Chat History</h3>
-        <button @click="toggleSound" class="icon-btn">
-          <i :class="['fas', isSoundEnabled ? 'fa-volume-up' : 'fa-volume-mute']"></i>
-        </button>
       </div>
       <div class="chat-list">
         <button 
@@ -47,6 +47,10 @@ const showHistory = ref(true)
 
 const toggleSound = () => {
   isSoundEnabled.value = !isSoundEnabled.value
+}
+
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value
 }
 
 const updateAgent = (agent: string) => {
@@ -159,6 +163,23 @@ if (chatHistory.value.length === 0) {
 
 .new-chat-btn:hover {
   background-color: #45a049;
+}
+
+.toggle-history-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-history-btn:hover {
+  background: #f5f5f5;
 }
 
 * {

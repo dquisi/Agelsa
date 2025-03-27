@@ -18,6 +18,7 @@
         >
           <i :class="isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash'"></i>
         </button>
+        <button @click="toggleAgentPopup" class="agent-select-btn">Select Agent</button>
       </div>
       <input 
         v-model="newMessage" 
@@ -32,6 +33,9 @@
         <button @click="sendMessage" class="send-btn">
           <i class="fas fa-paper-plane"></i>
         </button>
+        <button class="control-btn" @click="toggleAudio" :class="{ active: isAudioEnabled }">
+          <i :class="isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash'"></i>
+        </button>
       </div>
       <input
         type="file"
@@ -43,6 +47,14 @@
         <i class="fas fa-paperclip"></i>
       </button>
     </div>
+    <transition name="popup">
+      <div v-if="showAgentPopup" class="agent-popup">
+        <h3>Select Agent Type</h3>
+        <ul>
+          <li @click="selectAgent('elsa')">Elsa</li>
+          </ul>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -54,12 +66,13 @@ const props = defineProps<{
   messages: Array<{text: string, isUser: boolean}>
 }>()
 
-const emit = defineEmits(['update:messages'])
+const emit = defineEmits(['update:messages', 'update:agent'])
 
 const newMessage = ref('')
 const isAudioEnabled = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
+const showAgentPopup = ref(false)
 
 const toggleAudio = () => {
   isAudioEnabled.value = !isAudioEnabled.value
@@ -96,6 +109,15 @@ const handleFileUpload = (event: Event) => {
     // Handle file upload here
     newMessage.value = `Attached file: ${file.name}`
   }
+}
+
+const toggleAgentPopup = () => {
+  showAgentPopup.value = !showAgentPopup.value
+}
+
+const selectAgent = (type: string) => {
+  emit('update:agent', type)
+  showAgentPopup.value = false
 }
 
 watch(
@@ -161,13 +183,15 @@ watch(
 .chat-controls {
   padding: 0.5rem;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between; /* Distribute controls */
+  align-items: center;
 }
 
 .control-btn,
 .send-btn,
 .attachment-btn,
-.generate-btn {
+.generate-btn,
+.agent-select-btn {
   padding: 0.75rem;
   border: none;
   border-radius: 4px;
@@ -176,12 +200,14 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 0.5rem; /* Add margin for spacing */
 }
 
 .control-btn:hover,
 .send-btn:hover,
 .attachment-btn:hover,
-.generate-btn:hover {
+.generate-btn:hover,
+.agent-select-btn:hover {
   background: #eee;
 }
 
@@ -209,16 +235,41 @@ watch(
   gap: 0.5rem;
 }
 
-.control-btn {
-  background: none;
-  border: none;
+.agent-select-btn {
+  background-color: #FFC107; /* Amber color */
+  color: white;
+}
+
+.agent-popup {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.agent-popup ul {
+  list-style: none;
+  padding: 0;
+}
+
+.agent-popup li {
   cursor: pointer;
-  padding: 0.5rem;
-  color: #666;
+  padding: 0.5rem 0;
 }
 
-.control-btn:hover {
-  color: #333;
+.agent-popup li:hover {
+  background-color: #f0f0f0;
 }
 
+.popup-enter-active,
+.popup-leave-active {
+  transition: opacity 0.3s;
+}
+
+.popup-enter,
+.popup-leave-to {
+  opacity: 0;
+}
 </style>
