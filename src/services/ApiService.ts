@@ -12,13 +12,17 @@ export default class ApiService {
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = params.get("baseURL") || import.meta.env.VITE_AGENT_URL || "";
+    this.baseUrl = process.env.VITE_AGENT_URL || "";
     this.token = params.get("token") || "default_token";
     this.userId = params.get("userId") || "default_user";
     this.courseId = Number(params.get("courseId")) || 0;
     this.elsaToken = params.get("elsaToken") || undefined;
-    this.sectionId = params.get("sectionId") ? Number(params.get("sectionId")) : undefined;
-    this.resourceId = params.get("resourceId") ? Number(params.get("resourceId")) : undefined;
+    this.sectionId = params.get("sectionId")
+      ? Number(params.get("sectionId"))
+      : undefined;
+    this.resourceId = params.get("resourceId")
+      ? Number(params.get("resourceId"))
+      : undefined;
     this.customPrompt = params.get("customPrompt") || undefined;
   }
 
@@ -52,7 +56,7 @@ export default class ApiService {
       const payload: any = {
         message,
         user_id: this.userId,
-        course_id: this.courseId
+        course_id: this.courseId,
       };
 
       if (this.customPrompt) payload.custom_prompt = this.customPrompt;
