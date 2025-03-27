@@ -99,7 +99,6 @@ export default class ApiService {
         user: this.userId.toString(),
         files: [],
       };
-      console.log(payload);
       const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {
         method: "POST",
         headers: {
@@ -108,7 +107,6 @@ export default class ApiService {
         },
         body: JSON.stringify(payload),
       });
-      console.error(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -116,26 +114,26 @@ export default class ApiService {
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader available");
 
-      let buffer = '';
+      let buffer = "";
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += new TextDecoder().decode(value);
-        const lines = buffer.split('\n');
+        const lines = buffer.split("\n");
 
         for (let i = 0; i < lines.length - 1; i++) {
-          if (lines[i].trim() === '') continue;
+          if (lines[i].trim() === "") continue;
 
           try {
-            const dataStr = lines[i].replace('data: ', '');
+            const dataStr = lines[i].replace("data: ", "");
             const data = JSON.parse(dataStr);
 
-            if (data.event === 'agent_thought' && data.thought) {
+            if (data.event === "agent_thought" && data.thought) {
               onChunk(data.thought);
             }
           } catch (e) {
-            console.error('Error parsing chunk:', e);
+            console.error("Error parsing chunk:", e);
           }
         }
 
