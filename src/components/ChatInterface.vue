@@ -1,5 +1,14 @@
 <template>
   <div class="chat-interface">
+    <div class="suggestions" v-if="suggestedQuestions.length > 0">
+      <button 
+        v-for="(question, index) in suggestedQuestions" 
+        :key="index"
+        class="suggestion-button"
+        @click="handleSuggestion(question)">
+        {{ question }}
+      </button>
+    </div>
     <div class="header">
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
@@ -174,6 +183,13 @@ const toggleVoiceRecording = () => {
 import ApiService from '../services/ApiService'
 const apiService = new ApiService()
 const currentStreamingMessage = ref('')
+const suggestedQuestions = ref<string[]>([])
+const currentMessageId = ref('')
+
+const handleSuggestion = (question: string) => {
+  newMessage.value = question
+  sendMessage()
+}
 
 const sendMessage = async () => {
   const message = newMessage.value.trim()
@@ -366,5 +382,28 @@ onMounted(scrollToBottom)
 
 .icon-button.primary:hover {
   background: #0066cc;
+}
+
+.suggestions {
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.suggestion-button {
+  padding: 0.5rem 1rem;
+  background: #f0f7ff;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  color: #0066cc;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.suggestion-button:hover {
+  background: #e6f2ff;
+  border-color: #0066cc;
 }
 </style>

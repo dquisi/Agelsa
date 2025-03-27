@@ -79,6 +79,28 @@ export default class ApiService {
     }
   }
 
+  async getSuggestedQuestions(messageId: string): Promise<string[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/messages/${messageId}/suggested?user=${this.userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.agentToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.suggestions || [];
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
+      return [];
+    }
+  }
+
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
       const inputs: any = {
