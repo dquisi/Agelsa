@@ -94,8 +94,25 @@ watch(() => props.messages, scrollToBottom, { deep: true })
 let mediaRecorder: MediaRecorder | null = null
 let audioChunks: Blob[] = []
 
+const requestMicrophonePermission = async () => {
+  try {
+    const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+    if (result.state === 'denied') {
+      alert('Please allow microphone access to use voice recording');
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error checking permissions:', err);
+    return false;
+  }
+};
+
 const startRecording = async () => {
   try {
+    const hasPermission = await requestMicrophonePermission();
+    if (!hasPermission) return;
+    
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaRecorder = new MediaRecorder(stream)
     isRecording.value = true
