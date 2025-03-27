@@ -8,11 +8,13 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     proxy: {
-      "/api/v1": {
-        target: "https://stagingelsaits.cedia.edu.ec",
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+      proxy: {
+        "/api": {
+          target: "https://agent.cginstitutecenter.com",
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
       },
     },
     allowedHosts: [
