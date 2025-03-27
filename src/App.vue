@@ -98,30 +98,26 @@ if (chatHistory.value.length === 0) {
 .app {
   height: 100vh;
   display: flex;
-  background-color: #ffffff;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #fafafa;
+  font-family: 'Inter', sans-serif;
 }
 
 .chat-history {
-  width: 280px;
-  max-width: 100%;
-  background: #f8f9fa;
-  border-right: 1px solid #eee;
-  transition: all 0.3s ease;
+  width: 250px;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 10;
 }
 
 .chat-history.hidden {
-  width: 0;
   transform: translateX(-100%);
 }
 
 .history-header {
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -139,66 +135,69 @@ if (chatHistory.value.length === 0) {
   text-align: left;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: #333;
 }
 
 .history-item:hover {
-  background: #eee;
+  background: #f0f7ff;
 }
 
 .history-item.active {
-  background: #e9ecef;
-  color: #4CAF50;
+  background: #e6f2ff;
+  color: #0066cc;
 }
 
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0;
 }
 
 .top-bar {
   padding: 0.75rem;
-  border-bottom: 1px solid #eee;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
 }
 
-.spacer {
-  flex: 1;
-}
-
 .actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: #f8f9fa;
-  border-top: 1px solid #eee;
   justify-content: center;
+  padding: 1rem;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  gap: 1rem;
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
-  background: white;
-  color: #666;
+  background: #f0f7ff;
+  color: #0066cc;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.2s;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
 }
 
 .icon-btn:hover {
+  background: #e6f2ff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  background: #f8f9fa;
+}
+
+.icon-btn:active {
+  transform: translateY(0);
 }
 </style>
