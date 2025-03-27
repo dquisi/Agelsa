@@ -10,8 +10,8 @@
     <div class="messages" ref="messagesContainer" v-show="showHistory">
       <div v-for="(message, index) in messages" 
            :key="index" 
-           :class="['message', message.isUser ? 'user-message' : 'bot-message']">
-        {{ message.text }}
+           :class="['message', message.isUser ? 'user-message' : 'bot-message']"
+           v-html="formatMessage(message.text)">
       </div>
     </div>
 
@@ -47,6 +47,17 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import axios from 'axios'
+import { marked } from 'marked'
+
+const formatMessage = (text: string) => {
+  // Separar el texto en secciones usando '___' como delimitador
+  const sections = text.split('___')
+  
+  // Procesar cada sección con Markdown
+  return sections.map(section => 
+    marked.parse(section.trim(), { breaks: true })
+  ).join('<hr class="section-divider">')
+}
 
 const props = defineProps<{
   messages: Array<{text: string, isUser: boolean}>,
@@ -235,6 +246,49 @@ onMounted(scrollToBottom)
   margin-right: auto;
   background: #F0F0F0;
   color: #333;
+}
+
+.bot-message :deep(h1, h2, h3, h4, h5, h6) {
+  margin: 0.5em 0;
+}
+
+.bot-message :deep(ul, ol) {
+  margin-left: 1.5em;
+}
+
+.bot-message :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.bot-message :deep(th, td) {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.bot-message :deep(th) {
+  background-color: #f5f5f5;
+}
+
+.bot-message :deep(.section-divider) {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+.bot-message :deep(code) {
+  background: #f4f4f4;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+.bot-message :deep(pre) {
+  background: #f4f4f4;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
 }
 
 .input-container {
