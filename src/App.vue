@@ -3,7 +3,10 @@
   <div class="app">
     <div class="chat-history" :class="{ 'hidden': !showHistory }">
       <div class="history-header">
-        <h3>Chat History</h3>
+        <h3>History</h3>
+        <button @click="newChat" class="icon-btn" title="New Chat">
+          <i class="fas fa-plus"></i>
+        </button>
       </div>
       <div class="history-list">
         <button 
@@ -23,10 +26,6 @@
         <button @click="toggleHistory" class="icon-btn">
           <i class="fas fa-bars"></i>
         </button>
-        <div class="spacer"></div>
-        <button @click="toggleConfig" class="icon-btn" title="Settings">
-          <i class="fas fa-cog"></i>
-        </button>
       </div>
 
       <ChatInterface 
@@ -35,17 +34,11 @@
       />
 
       <div class="actions">
-        <button @click="newChat" class="icon-btn" title="New Chat">
-          <i class="fas fa-plus"></i>
-        </button>
         <button class="icon-btn" title="Voice">
           <i class="fas fa-microphone"></i>
         </button>
-        <button class="icon-btn" title="Attach File">
-          <i class="fas fa-paperclip"></i>
-        </button>
-        <button class="icon-btn" title="Audio">
-          <i class="fas fa-headphones"></i>
+        <button @click="toggleConfig" class="icon-btn" title="Settings">
+          <i class="fas fa-cog"></i>
         </button>
       </div>
     </div>
@@ -107,21 +100,28 @@ if (chatHistory.value.length === 0) {
 }
 
 .chat-history {
-  width: 250px;
+  width: 280px;
+  max-width: 100%;
   background: #f8f9fa;
   border-right: 1px solid #eee;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 10;
 }
 
 .chat-history.hidden {
+  width: 0;
   transform: translateX(-100%);
 }
 
 .history-header {
   padding: 1rem;
   border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .history-list {
