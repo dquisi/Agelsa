@@ -4,11 +4,7 @@
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
       </button>
-      <select v-model="selectedAgent" default="content" @change="selectAgent">
-        <option value="content">Content</option>
-        <option value="resources">Resources</option>
-        <option value="analytics">Analytics</option>
-      </select>
+      
     </div>
 
     <div class="messages" ref="messagesContainer" v-show="showHistory">

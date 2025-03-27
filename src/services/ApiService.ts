@@ -4,14 +4,24 @@ import axios from 'axios'
 export default class ApiService {
   private baseUrl: string
   private token: string
+  private agentUrl: string
 
   constructor() {
     this.baseUrl = import.meta.env.VITE_MOODLE_URL
     this.token = import.meta.env.VITE_MOODLE_TOKEN
+    this.agentUrl = import.meta.env.VITE_AGENT_URL
   }
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
+      // Get token from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const agentToken = urlParams.get('token');
+      
+      if (!agentToken) {
+        throw new Error('Agent token not provided in URL parameters');
+      }
+
       const response = await fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
         headers: {
