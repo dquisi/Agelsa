@@ -1,49 +1,63 @@
 
 <template>
   <div class="app">
-    <div class="chat-history" :class="{ 'hidden': !showHistory }">
-      <div class="history-header">
-        <h3>History</h3>
-        <button @click="newChat" class="icon-btn" title="New Chat">
-          <i class="fas fa-plus"></i>
-        </button>
+    <div class="chat-container" :class="{ 'full-width': !showHistory }">
+      <div class="chat-history" :class="{ 'hidden': !showHistory }">
+        <div class="history-header">
+          <h3>History</h3>
+          <button @click="newChat" class="icon-btn" title="New Chat">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="history-list">
+          <button 
+            v-for="(chat, index) in chatHistory" 
+            :key="index"
+            @click="loadChat(index)"
+            class="history-item"
+            :class="{ 'active': currentChatIndex === index }"
+          >
+            Chat {{ index + 1 }}
+          </button>
+        </div>
       </div>
-      <div class="history-list">
-        <button 
-          v-for="(chat, index) in chatHistory" 
-          :key="index"
-          @click="loadChat(index)"
-          class="history-item"
-          :class="{ 'active': currentChatIndex === index }"
-        >
-          Chat {{ index + 1 }}
-        </button>
-      </div>
-    </div>
-    
-    <div class="main-container">
-      <div class="top-bar">
-        <button @click="toggleHistory" class="icon-btn">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
+      
+      <div class="main-container">
+        <div class="top-bar">
+          <button @click="toggleHistory" class="icon-btn">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
 
-      <div class="controls-bar">
-        <button class="icon-btn" title="New message">
-          <i class="fas fa-message"></i>
-        </button>
-        <button class="icon-btn" title="Voice">
-          <i class="fas fa-microphone"></i>
-        </button>
-        <button class="icon-btn" title="Settings">
-          <i class="fas fa-cog"></i>
-        </button>
-      </div>
+        <div class="chat-content">
+          <ChatInterface 
+            :messages="currentMessages"
+            @update:messages="updateMessages" 
+          />
+        </div>
 
-      <ChatInterface 
-        :messages="currentMessages"
-        @update:messages="updateMessages" 
-      />
+        <div class="message-controls">
+          <div class="input-container">
+            <input 
+              type="text" 
+              placeholder="Type your message..." 
+              v-model="newMessage"
+              @keyup.enter="sendMessage"
+            >
+            <div class="action-buttons">
+              <button class="icon-btn" title="Message" @click="sendMessage">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+              <button class="icon-btn" title="Voice">
+                <i class="fas fa-microphone"></i>
+              </button>
+              <button class="icon-btn" title="Settings">
+                <i class="fas fa-cog"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -55,14 +69,21 @@ import ChatInterface from './components/ChatInterface.vue'
 const chatHistory = ref<Array<Array<{text: string, isUser: boolean}>>>([])
 const currentChatIndex = ref(0)
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
-const showHistory = ref(false)
+const showHistory = ref(true)
+const newMessage = ref('')
 
 const toggleHistory = () => {
   showHistory.value = !showHistory.value
 }
 
-const toggleConfig = () => {
-  // Configuration toggle logic here
+const sendMessage = () => {
+  if (newMessage.value.trim()) {
+    currentMessages.value.push({
+      text: newMessage.value,
+      isUser: true
+    })
+    newMessage.value = ''
+  }
 }
 
 const newChat = () => {
@@ -78,9 +99,6 @@ const loadChat = (index: number) => {
 
 const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
   currentMessages.value = [...messages]
-  if (!chatHistory.value[currentChatIndex.value]) {
-    chatHistory.value[currentChatIndex.value] = []
-  }
   chatHistory.value[currentChatIndex.value] = [...messages]
 }
 
@@ -100,9 +118,17 @@ if (chatHistory.value.length === 0) {
 
 .app {
   height: 100vh;
-  display: flex;
   background-color: #fafafa;
   font-family: 'Inter', sans-serif;
+}
+
+.chat-container {
+  display: flex;
+  height: 100%;
+}
+
+.chat-container.full-width {
+  width: 100%;
 }
 
 .chat-history {
@@ -115,7 +141,9 @@ if (chatHistory.value.length === 0) {
 }
 
 .chat-history.hidden {
-  transform: translateX(-100%);
+  transform: translateX(-250px);
+  position: absolute;
+  height: 100%;
 }
 
 .history-header {
@@ -133,24 +161,14 @@ if (chatHistory.value.length === 0) {
 }
 
 .history-item {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
   background: none;
   border: none;
-  border-radius: 50%;
+  border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 0.5rem;
   color: #333;
-}
-
-.history-item::before {
-  content: '\f15c';
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 400;
 }
 
 .history-item:hover {
@@ -162,45 +180,57 @@ if (chatHistory.value.length === 0) {
   color: #0066cc;
 }
 
-.controls-bar {
-  display: flex;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  justify-content: center;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-}
-
 .main-container {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: #fff;
 }
 
 .top-bar {
   padding: 0.75rem;
-  background: #fff;
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
 }
 
-.actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
+.chat-content {
+  flex: 1;
+  overflow-y: auto;
   padding: 1rem;
-  background: #fff;
+}
+
+.message-controls {
+  padding: 1rem;
   border-top: 1px solid #e0e0e0;
-  gap: 1rem;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.input-container input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .icon-btn {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   background: #f0f7ff;
@@ -209,16 +239,11 @@ if (chatHistory.value.length === 0) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
 }
 
 .icon-btn:hover {
   background: #e6f2ff;
-  transform: translateY(-1px);
-}
-
-.icon-btn:active {
-  transform: translateY(0);
 }
 </style>
