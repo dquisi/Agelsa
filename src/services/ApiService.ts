@@ -12,15 +12,11 @@ export default class ApiService {
   constructor() {
     const params = new URLSearchParams(window.location.search)
     this.baseUrl = 'http://agente.cedia.org.ec'
-    this.token = params.get('agentToken') || ''
-    this.userId = params.get('userId') || ''
+    this.token = params.get('agentToken') || 'default_token'
+    this.userId = params.get('userId') || 'default_user'
     this.moodleUrl = params.get('moodleUrl') || ''
     this.moodleToken = params.get('moodleToken') || ''
     this.courseId = params.get('courseId') || ''
-
-    if (!this.token || !this.userId) {
-      throw new Error('Missing required URL parameters')
-    }
   }
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
