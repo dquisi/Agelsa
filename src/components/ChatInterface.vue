@@ -5,6 +5,9 @@
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
       </button>
+      <button v-if="showHistory" class="new-chat" @click="$emit('new-chat')">
+        <i class="fas fa-plus"></i> New Chat
+      </button>
       <select v-model="selectedAgent" class="agent-select">
         <option value="default">Default Agent</option>
         <option value="gpt4">GPT-4</option>
@@ -21,10 +24,12 @@
     </div>
 
     <div class="input-container">
-      <button class="new-chat" @click="$emit('new-chat')">
-        <i class="fas fa-plus"></i> New Chat
-      </button>
       <div class="message-input">
+        <div class="action-buttons">
+          <button class="icon-button primary" @click="sendMessage">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
         <textarea
           v-model="newMessage"
           @keyup.enter="sendMessage"
@@ -40,9 +45,6 @@
           </button>
           <button class="icon-button" @click="$refs.fileInput.click()">
             <i class="fas fa-paperclip"></i>
-          </button>
-          <button class="icon-button primary" @click="sendMessage">
-            <i class="fas fa-paper-plane"></i>
           </button>
         </div>
       </div>
@@ -168,7 +170,7 @@ onMounted(scrollToBottom)
 
 .header {
   display: flex;
-  justify-content: space-between;
+  gap: 1rem;
   align-items: center;
   padding: 1rem;
   border-bottom: 1px solid #eee;
