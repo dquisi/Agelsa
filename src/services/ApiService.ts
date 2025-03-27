@@ -3,19 +3,22 @@ import axios from "axios";
 export default class ApiService {
   private baseUrl: string;
   private token: string;
-  private userId: string;
-  private courseId: number;
+  private moodleUrl: string;
+  private moodleToken: string;
   private elsaToken?: string;
+  private userId: number;
+  private courseId: number;
   private sectionId?: number;
   private resourceId?: number;
   private customPrompt?: string;
-  private moodleUrl?: string;
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = import.meta.env.VITE_AGENT_URL;
-    this.token = params.get("token") || "default_token";
-    this.userId = params.get("userId") || "default_user";
+    this.baseUrl = process.env.VITE_AGENT_URL || "";
+    this.token = params.get("token") || "";
+    this.moodleUrl = params.get("moodleUrl") || "";
+    this.moodleToken = params.get("moodleToken") || "";
+    this.userId = Number(params.get("userId")) || 1;
     this.courseId = Number(params.get("courseId")) || 0;
     this.elsaToken = params.get("elsaToken") || undefined;
     this.sectionId = params.get("sectionId")
@@ -25,7 +28,6 @@ export default class ApiService {
       ? Number(params.get("resourceId"))
       : undefined;
     this.customPrompt = params.get("customPrompt") || undefined;
-    this.moodleUrl = params.get("moodleUrl") || undefined;
   }
 
   async convertAudioToText(audioBlob: Blob): Promise<string> {
@@ -57,14 +59,16 @@ export default class ApiService {
     try {
       const payload: any = {
         message,
-        user_id: this.userId,
-        course_id: this.courseId,
+        baseURL: this.moodleUrl,
+        token: this.moodleToken,
+        userid: this.userId,
+        courseid: this.courseId,
       };
 
       if (this.customPrompt) payload.custom_prompt = this.customPrompt;
-      if (this.elsaToken) payload.elsa_token = this.elsaToken;
-      if (this.sectionId) payload.section_id = this.sectionId;
-      if (this.resourceId) payload.resource_id = this.resourceId;
+      if (this.elsaToken) payload.elsatoken = this.elsaToken;
+      if (this.sectionId) payload.sectionid = this.sectionId;
+      if (this.resourceId) payload.resourceid = this.resourceId;
 
       const response = await fetch(`${this.baseUrl}/v1/chat`, {
         method: "POST",
