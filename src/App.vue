@@ -36,27 +36,7 @@
           />
         </div>
 
-        <div class="message-controls">
-          <div class="input-container">
-            <input 
-              type="text" 
-              placeholder="Type your message..." 
-              v-model="newMessage"
-              @keyup.enter="sendMessage"
-            >
-            <div class="action-buttons">
-              <button class="icon-btn" title="Message" @click="sendMessage">
-                <i class="fas fa-paper-plane"></i>
-              </button>
-              <button class="icon-btn" title="Voice">
-                <i class="fas fa-microphone"></i>
-              </button>
-              <button class="icon-btn" title="Settings">
-                <i class="fas fa-cog"></i>
-              </button>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   </div>
