@@ -1,4 +1,3 @@
-
 <template>
   <div class="chat-interface">
     <div class="header">
@@ -128,32 +127,57 @@ const toggleVoiceRecording = () => {
   }
 }
 
+
+class ApiService {
+  async sendMessageStream(message: string, callback: (chunk: string) => void) {
+    try {
+      const response = await axios.post('/api/v1/chat/completions', {
+        message,
+        agent: selectedAgent.value,
+        context: selectedAgent.value === 'analytics' ? 'data_analysis' :
+          selectedAgent.value === 'resources' ? 'resource_management' :
+            selectedAgent.value === 'content' ? 'content_generation' : 'default'
+      }, {
+        responseType: 'stream'
+      });
+
+      const reader = response.data.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = new TextDecoder("utf-8").decode(value);
+        callback(chunk);
+      }
+    } catch (error) {
+      console.error("Error in ApiService sendMessageStream: ", error);
+      throw error; // Re-throw to be caught in sendMessage
+    }
+  }
+}
+
+const apiService = new ApiService()
+const currentStreamingMessage = ref('')
+
 const sendMessage = async () => {
   const message = newMessage.value.trim()
   if (!message) return
 
   const userMessage = { text: message, isUser: true }
-  const updatedMessages = [...props.messages, userMessage]
+  const botMessage = { text: '', isUser: false }
+  const updatedMessages = [...props.messages, userMessage, botMessage]
   emit('update:messages', updatedMessages)
   newMessage.value = ''
+  currentStreamingMessage.value = ''
 
   if (isMuted.value) return
 
   try {
-    const response = await axios.post('/api/v1/chat/completions', {
-      message,
-      agent: selectedAgent.value,
-      context: selectedAgent.value === 'analytics' ? 'data_analysis' : 
-              selectedAgent.value === 'resources' ? 'resource_management' : 
-              selectedAgent.value === 'content' ? 'content_generation' : 'default'
+    await apiService.sendMessageStream(message, (chunk) => {
+      currentStreamingMessage.value += chunk
+      const lastMessageIndex = updatedMessages.length - 1
+      updatedMessages[lastMessageIndex].text = currentStreamingMessage.value
+      emit('update:messages', [...updatedMessages])
     })
-
-    if (response.data?.answer) {
-      emit('update:messages', [...updatedMessages, { 
-        text: response.data.answer, 
-        isUser: false 
-      }])
-    }
   } catch (error) {
     console.error('Error sending message:', error)
   }

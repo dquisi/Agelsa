@@ -4,36 +4,41 @@ import axios from 'axios'
 export default class ApiService {
   private baseUrl: string
   private token: string
-  private openaiKey: string
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_BASE_URL
-    this.token = import.meta.env.VITE_TOKEN
-    this.openaiKey = import.meta.env.VITE_OPENAI_API_KEY
+    this.baseUrl = import.meta.env.VITE_MOODLE_URL
+    this.token = import.meta.env.VITE_MOODLE_TOKEN
   }
 
-  async sendToDify(message: string) {
-    const response = await axios.post(`${this.baseUrl}/chat`, {
-      message,
-      course_id: import.meta.env.VITE_COURSE_ID,
-      user_id: import.meta.env.VITE_USER_ID
-    }, {
-      headers: {
-        Authorization: `Bearer ${this.token}`
-      }
-    })
-    return response.data
-  }
+  async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
+    try {
+      const response = await fetch(`${this.baseUrl}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`
+        },
+        body: JSON.stringify({
+          message,
+          course_id: import.meta.env.VITE_MOODLE_COURSE_ID,
+          user_id: import.meta.env.VITE_MOODLE_USER_ID,
+          stream: true
+        })
+      })
 
-  async sendToOpenAI(message: string) {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: message }]
-    }, {
-      headers: {
-        Authorization: `Bearer ${this.openaiKey}`
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('No reader available')
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        const chunk = new TextDecoder().decode(value)
+        onChunk(chunk)
       }
-    })
-    return response.data.choices[0].message.content
+    } catch (error) {
+      console.error('Error in streaming:', error)
+      throw error
+    }
   }
 }
