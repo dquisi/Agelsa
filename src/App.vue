@@ -6,16 +6,22 @@
     </button>
     <div class="sidebar" :class="{ 'hidden': !showHistory }">
       <div class="chat-list">
-        <div 
-          v-for="(chat, index) in chats" 
-          :key="index"
-          class="chat-item"
-          :class="{ 'active': currentChatIndex === index }"
-          @click="selectChat(index)"
-        >
-          <span>Chat {{ index + 1 }}</span>
-          <i class="fas fa-trash" @click.stop="deleteChat(index)" v-if="chats.length > 1"></i>
+        <h2 class="history-title">History</h2>
+        <div class="chat-items">
+          <div 
+            v-for="(chat, index) in chats" 
+            :key="index"
+            class="chat-item"
+            :class="{ 'active': currentChatIndex === index }"
+            @click="selectChat(index)"
+          >
+            <span>Chat {{ index + 1 }}</span>
+            <i class="fas fa-trash" @click.stop="deleteChat(index)" v-if="chats.length > 1"></i>
+          </div>
         </div>
+        <button class="new-chat" @click="createNewChat">
+          <i class="fas fa-plus"></i> New Chat
+        </button>
       </div>
     </div>
     <div class="chat-container">
@@ -123,6 +129,19 @@ const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
 
 .chat-list {
   padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.history-title {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.chat-items {
   flex: 1;
   overflow-y: auto;
 }
@@ -135,7 +154,7 @@ const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;

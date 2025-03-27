@@ -223,12 +223,13 @@ onMounted(scrollToBottom)
 
 .message-input textarea {
   flex: 1;
-  padding: 0.8rem;
+  padding: 1rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   resize: none;
   font-size: 0.95rem;
-  height: 45px;
+  height: 50px;
+  overflow-y: hidden;
 }
 
 .action-buttons {
