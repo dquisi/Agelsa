@@ -21,6 +21,9 @@
     </div>
 
     <div class="input-container">
+      <button class="new-chat" @click="$emit('new-chat')">
+        <i class="fas fa-plus"></i> New Chat
+      </button>
       <div class="message-input">
         <textarea
           v-model="newMessage"
@@ -212,24 +215,41 @@ onMounted(scrollToBottom)
 
 .message-input {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
 }
 
 .message-input textarea {
-  width: 100%;
+  flex: 1;
   padding: 0.8rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   resize: none;
   font-size: 0.95rem;
-  min-height: 45px;
+  height: 45px;
 }
 
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-  justify-content: flex-end;
+}
+
+.new-chat {
+  padding: 0.75rem;
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.new-chat:hover {
+  background: #0066cc;
 }
 
 .icon-button {

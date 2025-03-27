@@ -6,9 +6,6 @@
     </button>
     <div class="sidebar" :class="{ 'hidden': !showHistory }">
       <div class="chat-list">
-        <button class="new-chat" @click="createNewChat">
-          <i class="fas fa-plus"></i> New Chat
-        </button>
         <div 
           v-for="(chat, index) in chats" 
           :key="index"
@@ -25,6 +22,7 @@
       <ChatInterface 
         :messages="currentChat.messages"
         @update:messages="updateMessages"
+        @new-chat="createNewChat"
         :current-agent="currentAgent"
       />
     </div>
