@@ -84,8 +84,8 @@ export default class ApiService {
       const inputs: any = {
         baseURL: this.moodleUrl,
         token: this.moodleToken,
-        userid: this.userId,
-        courseid: this.courseId,
+        userid: this.userId.toString(),
+        courseid: this.courseId.toString(),
       };
       if (this.customPrompt) inputs.custom_prompt = this.customPrompt;
       if (this.elsaToken) inputs.elsatoken = this.elsaToken;

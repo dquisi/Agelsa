@@ -7,16 +7,6 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
-    proxy: {
-      proxy: {
-        "/api": {
-          target: "https://agent.cginstitutecenter.com",
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/api/, ""),
-        },
-      },
-    },
     allowedHosts: [
       "*.replit.dev",
       "*.repl.co",
