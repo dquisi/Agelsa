@@ -14,7 +14,7 @@ export default class ApiService {
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = process.env.VITE_AGENT_URL || "";
+    this.baseUrl = import.meta.env.VITE_AGENT_URL || "";
     this.token = params.get("token") || "";
     this.moodleUrl = params.get("moodleUrl") || "";
     this.moodleToken = params.get("moodleToken") || "";
