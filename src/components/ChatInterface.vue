@@ -25,7 +25,6 @@
     </div>
 
     <div class="input-container">
-      <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none">
       <div class="message-input">
         <textarea
           v-model="newMessage"
@@ -36,11 +35,11 @@
           <button class="icon-button" @click="toggleVoiceRecording" :class="{ 'active': isRecording }">
             <i class="fas fa-microphone"></i>
           </button>
-          <button class="icon-button" @click="$refs.fileInput.click()">
-            <i class="fas fa-paperclip"></i>
-          </button>
           <button class="icon-button" @click="sendMessage">
             <i class="fas fa-paper-plane"></i>
+          </button>
+          <button class="icon-button" @click="toggleConfig">
+            <i class="fas fa-cog"></i>
           </button>
         </div>
       </div>
