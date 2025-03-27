@@ -45,19 +45,18 @@ export default class ApiService {
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {
+      const response = await fetch(`${this.baseUrl}/v1/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({
-          inputs: {},
-          query: message,
-          response_mode: "streaming",
-          conversation_id: "",
-          user: this.userId,
-          files: [],
+          message: message,
+          moodle_url: this.moodleUrl,
+          moodle_token: this.moodleToken,
+          course_id: this.courseId,
+          user_id: this.userId
         }),
       });
 
