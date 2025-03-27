@@ -4,18 +4,22 @@ export default class ApiService {
   private baseUrl: string;
   private token: string;
   private userId: string;
-  private moodleUrl: string;
-  private moodleToken: string;
-  private courseId: string;
+  private courseId: number;
+  private elsaToken?: string;
+  private sectionId?: number;
+  private resourceId?: number;
+  private customPrompt?: string;
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = import.meta.env.VITE_AGENT_URL || "";
-    this.token = params.get("agentToken") || "default_token";
+    this.baseUrl = params.get("baseURL") || import.meta.env.VITE_AGENT_URL || "";
+    this.token = params.get("token") || "default_token";
     this.userId = params.get("userId") || "default_user";
-    this.moodleUrl = params.get("moodleUrl") || "";
-    this.moodleToken = params.get("moodleToken") || "";
-    this.courseId = params.get("courseId") || "";
+    this.courseId = Number(params.get("courseId")) || 0;
+    this.elsaToken = params.get("elsaToken") || undefined;
+    this.sectionId = params.get("sectionId") ? Number(params.get("sectionId")) : undefined;
+    this.resourceId = params.get("resourceId") ? Number(params.get("resourceId")) : undefined;
+    this.customPrompt = params.get("customPrompt") || undefined;
   }
 
   async convertAudioToText(audioBlob: Blob): Promise<string> {
@@ -45,19 +49,24 @@ export default class ApiService {
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
+      const payload: any = {
+        message,
+        user_id: this.userId,
+        course_id: this.courseId
+      };
+
+      if (this.customPrompt) payload.custom_prompt = this.customPrompt;
+      if (this.elsaToken) payload.elsa_token = this.elsaToken;
+      if (this.sectionId) payload.section_id = this.sectionId;
+      if (this.resourceId) payload.resource_id = this.resourceId;
+
       const response = await fetch(`${this.baseUrl}/v1/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`,
         },
-        body: JSON.stringify({
-          message: message,
-          moodle_url: this.moodleUrl,
-          moodle_token: this.moodleToken,
-          course_id: this.courseId,
-          user_id: this.userId
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
