@@ -1,20 +1,10 @@
 <template>
   <div class="app">
     <div class="main-container">
-      <div class="top-bar">
-        <button @click="toggleHistory" class="toggle-history-btn">
-          <i class="fas fa-history"></i>
-        </button>
-        <div class="agent-selector">
-          <select v-model="currentAgent" class="agent-select">
-            <option value="ELSA ANALITICA">ELSA Analítica</option>
-            <option value="ELSA CONTENIDO">ELSA Contenido</option>
-            <option value="ELSA RECURSOS">ELSA Recursos</option>
-          </select>
-        </div>
-      </div>
-
       <div class="content-wrapper">
+        <button @click="toggleHistory" class="toggle-history-btn">
+          <i class="fas fa-bars"></i>
+        </button>
         <div class="sidebar" :class="{ 'hidden': !showHistory }">
           <div class="sidebar-header">
             <h3>Chat History</h3>
@@ -48,7 +38,6 @@
 import { ref } from 'vue'
 import ChatInterface from './components/ChatInterface.vue'
 
-const currentAgent = ref('ELSA ANALITICA')
 const chatHistory = ref<Array<Array<{text: string, isUser: boolean}>>>([])
 const currentChatIndex = ref(0)
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
@@ -85,7 +74,7 @@ if (chatHistory.value.length === 0) {
 
 .app {
   height: 100vh;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -95,30 +84,27 @@ if (chatHistory.value.length === 0) {
   flex-direction: column;
 }
 
-.top-bar {
+.toggle-history-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1000;
+  background: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2rem;
-  background-color: #fff;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.agent-selector {
-  flex: 1;
-  display: flex;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.agent-select {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
-  background-color: #fff;
-  cursor: pointer;
-  min-width: 200px;
+.toggle-history-btn:hover {
+  background: #f8f9fa;
+  transform: scale(1.05);
 }
 
 .content-wrapper {
