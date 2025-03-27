@@ -1,30 +1,24 @@
 <template>
   <div class="app">
     <div class="main-container">
-      <button @click="toggleHistory" class="toggle-history-btn">
-        <i class="fas fa-bars"></i>
-      </button>
-
-      <div class="sidebar" :class="{ 'hidden': !showHistory }">
-        <div class="chat-list">
-          <button 
-            v-for="(chat, index) in chatHistory" 
-            :key="index"
-            @click="loadChat(index)"
-            class="chat-item"
-          >
-            Chat {{ index + 1 }}
-          </button>
-        </div>
-        <button @click="newChat" class="new-chat-btn">
-          <i class="fas fa-plus"></i>
-        </button>
-      </div>
-
       <ChatInterface 
         :messages="currentMessages"
         @update:messages="updateMessages" 
       />
+      <div class="actions">
+        <button @click="newChat" class="action-btn">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button 
+          v-for="(chat, index) in chatHistory" 
+          :key="index"
+          @click="loadChat(index)"
+          class="action-btn"
+          :class="{ 'active': currentChatIndex === index }"
+        >
+          {{ index + 1 }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -81,91 +75,44 @@ if (chatHistory.value.length === 0) {
 .main-container {
   height: 100vh;
   display: flex;
-  position: relative;
+  flex-direction: column;
 }
 
-.toggle-history-btn {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1000;
-  background: #ffffff;
-  border: none;
-  border-radius: 50%;
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+}
+
+.action-btn {
   width: 40px;
   height: 40px;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.toggle-history-btn:hover {
-  transform: scale(1.05);
-  background: #f8f9fa;
-}
-
-.sidebar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 250px;
-  background-color: #fff;
-  border-right: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease;
-  z-index: 100;
-}
-
-.sidebar.hidden {
-  transform: translateX(-100%);
-}
-
-.chat-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.chat-item {
-  width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  border: none;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.2s;
-  color: #333;
-}
-
-.chat-item:hover {
-  background-color: #e9ecef;
-}
-
-.new-chat-btn {
-  margin: 1rem;
-  padding: 0.75rem;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  border: none;
+  background: white;
+  color: #333;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
-  transition: transform 0.2s;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s;
 }
 
-.new-chat-btn:hover {
-  transform: scale(1.05);
+.action-btn:first-child {
+  background: #4CAF50;
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-btn.active {
+  background: #e9ecef;
+  color: #4CAF50;
 }
 </style>
