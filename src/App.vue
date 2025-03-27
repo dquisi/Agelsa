@@ -1,63 +1,61 @@
-
 <template>
   <div class="app">
-    <div class="top-bar">
-      <AgentSelector @update:agent="updateAgent" />
-      <button @click="toggleHistory" class="toggle-history-btn">
-        <i class="fas fa-history"></i>
-      </button>
-    </div>
-    <div class="sidebar" :class="{ 'hidden': !showHistory }">
-      <div class="sidebar-header">
-        <h3>Chat History</h3>
-      </div>
-      <div class="chat-list">
-        <button 
-          v-for="(chat, index) in chatHistory" 
-          :key="index"
-          @click="loadChat(index)"
-          class="chat-item"
-        >
-          Chat {{ index + 1 }}
+    <div class="main-container">
+      <div class="top-bar">
+        <button @click="toggleHistory" class="toggle-history-btn">
+          <i class="fas fa-history"></i>
         </button>
+        <div class="agent-selector">
+          <select v-model="currentAgent" class="agent-select">
+            <option value="ELSA ANALITICA">ELSA Analítica</option>
+            <option value="ELSA CONTENIDO">ELSA Contenido</option>
+            <option value="ELSA RECURSOS">ELSA Recursos</option>
+          </select>
+        </div>
       </div>
-      <button @click="newChat" class="new-chat-btn">
-        <i class="fas fa-plus"></i> New Chat
-      </button>
-    </div>
-    <div class="main-content">
-      <AgentSelector @update:agent="updateAgent" />
-      <ChatInterface 
-        :currentAgent="currentAgent"
-        :messages="currentMessages"
-        @update:messages="updateMessages" 
-      />
+
+      <div class="content-wrapper">
+        <div class="sidebar" :class="{ 'hidden': !showHistory }">
+          <div class="sidebar-header">
+            <h3>Chat History</h3>
+          </div>
+          <div class="chat-list">
+            <button 
+              v-for="(chat, index) in chatHistory" 
+              :key="index"
+              @click="loadChat(index)"
+              class="chat-item"
+            >
+              Chat {{ index + 1 }}
+            </button>
+          </div>
+          <button @click="newChat" class="new-chat-btn">
+            <i class="fas fa-plus"></i> New Chat
+          </button>
+        </div>
+
+        <ChatInterface 
+          :currentAgent="currentAgent"
+          :messages="currentMessages"
+          @update:messages="updateMessages" 
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import AgentSelector from './components/AgentSelector.vue'
 import ChatInterface from './components/ChatInterface.vue'
 
 const currentAgent = ref('ELSA ANALITICA')
 const chatHistory = ref<Array<Array<{text: string, isUser: boolean}>>>([])
 const currentChatIndex = ref(0)
 const currentMessages = ref<Array<{text: string, isUser: boolean}>>([])
-const isSoundEnabled = ref(true)
 const showHistory = ref(true)
-
-const toggleSound = () => {
-  isSoundEnabled.value = !isSoundEnabled.value
-}
 
 const toggleHistory = () => {
   showHistory.value = !showHistory.value
-}
-
-const updateAgent = (agent: string) => {
-  currentAgent.value = `ELSA ${agent.toUpperCase()}`
 }
 
 const newChat = () => {
@@ -86,24 +84,44 @@ if (chatHistory.value.length === 0) {
 @import 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
 
 .app {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
   background-color: #f8f9fa;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.main-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 1rem 2rem;
   background-color: #fff;
   border-bottom: 1px solid rgba(0,0,0,0.1);
-  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.app > div:not(.top-bar) {
+.agent-selector {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.agent-select {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background-color: #fff;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.content-wrapper {
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -114,39 +132,13 @@ if (chatHistory.value.length === 0) {
   background-color: #fff;
   padding: 1.25rem;
   border-right: 1px solid rgba(0,0,0,0.1);
-  box-shadow: 2px 0 8px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
 }
 
 .sidebar.hidden {
-  transform: translateX(-250px);
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  color: #666;
-}
-
-.icon-btn:hover {
-  color: #333;
-}
-
-.main-content {
-  flex: 1;
-  padding: 1rem;
-  overflow-y: auto;
+  transform: translateX(-280px);
 }
 
 .chat-list {
@@ -181,12 +173,12 @@ if (chatHistory.value.length === 0) {
   border: none;
   border-radius: 8px;
   font-weight: 500;
-  transition: all 0.2s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  transition: all 0.2s ease;
 }
 
 .new-chat-btn:hover {
@@ -194,34 +186,17 @@ if (chatHistory.value.length === 0) {
 }
 
 .toggle-history-btn {
-  position: fixed;
-  top: 1.25rem;
-  left: 1.25rem;
-  z-index: 1000;
-  background: #fff;
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  padding: 0.75rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 0.5rem;
+  color: #666;
   transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .toggle-history-btn:hover {
-  background: #f8f9fa;
-  transform: scale(1.05);
-}
-
-.sidebar-header h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  color: #333;
+  transform: scale(1.1);
 }
 
 * {

@@ -9,44 +9,23 @@
         {{ message.text }}
       </div>
     </div>
-    <div class="input-area">
-      <div class="chat-controls">
-        <button 
-          class="control-btn"
-          @click="toggleAudio"
-          :class="{ active: isAudioEnabled }"
-        >
-          <i :class="isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash'"></i>
-        </button>
-        <button @click="toggleMute" class="control-btn">
-          <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
-        </button>
-        <button @click="toggleAgentPopup" class="agent-select-btn">Select Agent</button>
-      </div>
-      <input 
+
+    <div class="input-container">
+      <textarea 
         v-model="newMessage" 
         @keyup.enter="sendMessage"
         placeholder="Type your message..."
-        class="message-input"
-      />
-      <button @click="$refs.fileInput.click()" class="attachment-btn">
-        <i class="fas fa-paperclip"></i>
-      </button>
-      <input
-        type="file"
-        ref="fileInput"
-        @change="handleFileUpload"
-        style="display: none"
-      />
-    </div>
-    <transition name="popup">
-      <div v-if="showAgentPopup" class="agent-popup">
-        <h3>Select Agent Type</h3>
-        <ul>
-          <li @click="selectAgent('elsa')">Elsa</li>
-          </ul>
+        rows="1"
+      ></textarea>
+      <div class="button-group">
+        <button @click="toggleMute" class="action-button">
+          <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
+        </button>
+        <button @click="sendMessage" class="send-button">
+          <i class="fas fa-paper-plane"></i>
+        </button>
       </div>
-    </transition>
+    </div>
   </div>
 </template>
 
@@ -58,23 +37,14 @@ const props = defineProps<{
   messages: Array<{text: string, isUser: boolean}>
 }>()
 
-const emit = defineEmits(['update:messages', 'update:agent'])
-
+const emit = defineEmits(['update:messages'])
 const newMessage = ref('')
-const isAudioEnabled = ref(false)
-const isMuted = ref(false); // Added mute state
 const messagesContainer = ref<HTMLElement | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
-const showAgentPopup = ref(false)
-
-const toggleAudio = () => {
-  isAudioEnabled.value = !isAudioEnabled.value
-  // Add audio toggling logic here if needed (e.g., play/pause sound)
-}
+const isMuted = ref(false)
 
 const toggleMute = () => {
-  isMuted.value = !isMuted.value;
-};
+  isMuted.value = !isMuted.value
+}
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
@@ -83,60 +53,27 @@ const sendMessage = async () => {
   emit('update:messages', updatedMessages)
   newMessage.value = ''
 
-  // Simulate bot response (replace with actual API call)
-  setTimeout(() => {
-    const botResponse = { text: `${props.currentAgent}: I received your message`, isUser: false }
-    emit('update:messages', [...updatedMessages, botResponse])
-  }, 1000)
-}
-
-const generatePrompt = () => {
-  // Implement logic to generate a prompt from chat history here.
-  // This would likely involve accessing and processing the `messages` array.
-  // For example:
-  const lastMessage = props.messages[props.messages.length -1];
-  newMessage.value = `Based on the previous conversation: ${lastMessage.text}, what is the next step?`;
-}
-
-
-const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    const file = target.files[0]
-    // Handle file upload here
-    newMessage.value = `Attached file: ${file.name}`
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
 }
 
-const toggleAgentPopup = () => {
-  showAgentPopup.value = !showAgentPopup.value
-}
-
-const selectAgent = (type: string) => {
-  emit('update:agent', type)
-  showAgentPopup.value = false
-}
-
-watch(
-  () => props.messages,
-  async () => {
-    await nextTick()
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    }
+watch(() => props.messages, async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
-)
+})
 </script>
 
 <style scoped>
 .chat-interface {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  background: white;
   height: 100%;
-  background-color: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .messages {
@@ -146,114 +83,74 @@ watch(
 }
 
 .message {
-  margin: 0.5rem 0;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
   max-width: 80%;
+  margin: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  word-wrap: break-word;
 }
 
 .message.user {
-  background: #e3f2fd;
+  background-color: #e3f2fd;
   margin-left: auto;
+  border-bottom-right-radius: 0.25rem;
 }
 
 .message.bot {
-  background: #f5f5f5;
+  background-color: #f5f5f5;
   margin-right: auto;
+  border-bottom-left-radius: 0.25rem;
 }
 
-.input-area {
-  display: flex;
-  align-items: center;
+.input-container {
   padding: 1rem;
-  gap: 0.5rem;
   border-top: 1px solid #eee;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  background: white;
 }
 
-.message-input {
+textarea {
   flex: 1;
   padding: 0.75rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
   font-size: 1rem;
+  outline: none;
 }
 
-.chat-controls {
-  padding: 0.5rem;
+.button-group {
   display: flex;
-  justify-content: space-between; /* Distribute controls */
-  align-items: center;
+  gap: 0.5rem;
 }
 
-.control-btn,
-.attachment-btn,
-.agent-select-btn {
+.action-button {
   padding: 0.75rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   background: #f5f5f5;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 0.5rem; /* Add margin for spacing */
+  transition: all 0.2s ease;
 }
 
-.control-btn:hover,
-.attachment-btn:hover,
-.agent-select-btn:hover {
-  background: #eee;
+.action-button:hover {
+  background: #e0e0e0;
 }
 
-.control-btn.active {
+.send-button {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
   background: #4CAF50;
   color: white;
-}
-
-.attachment-btn {
-  background: #4CAF50;
-  color: white;
-}
-
-.attachment-btn:hover {
-  background: #45a049;
-}
-
-.agent-select-btn {
-  background-color: #FFC107; /* Amber color */
-  color: white;
-}
-
-.agent-popup {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-.agent-popup ul {
-  list-style: none;
-  padding: 0;
-}
-
-.agent-popup li {
   cursor: pointer;
-  padding: 0.5rem 0;
+  transition: all 0.2s ease;
 }
 
-.agent-popup li:hover {
-  background-color: #f0f0f0;
-}
-
-.popup-enter-active,
-.popup-leave-active {
-  transition: opacity 0.3s;
-}
-
-.popup-enter,
-.popup-leave-to {
-  opacity: 0;
+.send-button:hover {
+  background: #45a049;
 }
 </style>
