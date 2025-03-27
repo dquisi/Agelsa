@@ -2,7 +2,7 @@ import axios from "axios";
 
 export default class ApiService {
   private baseUrl: string;
-  private token: string;
+  private agentToken: string;
   private moodleUrl: string;
   private moodleToken: string;
   private elsaToken?: string;
@@ -14,8 +14,8 @@ export default class ApiService {
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = import.meta.env.VITE_AGENT_URL || "http://0.0.0.0:5000";
-    this.token = params.get("token") || "default_token";
+    this.baseUrl = import.meta.env.VITE_AGENT_URL || "";
+    this.agentToken = params.get("token") || "default_token";
     this.moodleUrl = params.get("moodleUrl") || "";
     this.moodleToken = params.get("moodleToken") || "";
     this.userId = Number(params.get("userId")) || 1;
@@ -38,7 +38,7 @@ export default class ApiService {
       const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.agentToken}`,
         },
         body: formData,
       });
@@ -46,7 +46,6 @@ export default class ApiService {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const data = await response.json();
       return data.text || "";
     } catch (error) {
@@ -74,7 +73,7 @@ export default class ApiService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.agentToken}`,
         },
         body: JSON.stringify(payload),
       });
