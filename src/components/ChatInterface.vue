@@ -5,8 +5,7 @@
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
       </button>
-      <select v-model="selectedAgent" class="agent-select">
-        <option value="default">Default Agent</option>
+      <select v-model="selectedAgent" default="content" @change="selectAgent">
         <option value="content">Content</option>
         <option value="resources">Resources</option>
         <option value="analytics">Analytics</option>
@@ -181,12 +180,6 @@ onMounted(scrollToBottom)
   border-bottom: 1px solid #eee;
 }
 
-.agent-select {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-}
 
 .messages {
   flex: 1;
