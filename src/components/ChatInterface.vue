@@ -7,8 +7,9 @@
       </button>
       <select v-model="selectedAgent" class="agent-select">
         <option value="default">Default Agent</option>
-        <option value="gpt4">GPT-4</option>
-        <option value="custom">Custom</option>
+        <option value="content">Content</option>
+        <option value="resources">Resources</option>
+        <option value="analytics">Analytics</option>
       </select>
     </div>
 
@@ -129,27 +130,34 @@ const toggleVoiceRecording = () => {
 }
 
 const sendMessage = async () => {
-  if (!newMessage.value.trim()) return
+  const message = newMessage.value.trim()
+  if (!message) return
 
-  const userMessage = { text: newMessage.value, isUser: true }
+  const userMessage = { text: message, isUser: true }
   const updatedMessages = [...props.messages, userMessage]
   emit('update:messages', updatedMessages)
+  newMessage.value = ''
+
+  if (isMuted.value) return
 
   try {
     const response = await axios.post('/api/v1/chat/completions', {
-      message: newMessage.value,
-      agent: selectedAgent.value
+      message,
+      agent: selectedAgent.value,
+      context: selectedAgent.value === 'analytics' ? 'data_analysis' : 
+              selectedAgent.value === 'resources' ? 'resource_management' : 
+              selectedAgent.value === 'content' ? 'content_generation' : 'default'
     })
 
-    if (response.data && !isMuted.value) {
-      const botMessage = { text: response.data.answer, isUser: false }
-      emit('update:messages', [...updatedMessages, botMessage])
+    if (response.data?.answer) {
+      emit('update:messages', [...updatedMessages, { 
+        text: response.data.answer, 
+        isUser: false 
+      }])
     }
   } catch (error) {
     console.error('Error sending message:', error)
   }
-
-  newMessage.value = ''
 }
 
 let mediaRecorder: MediaRecorder | null = null
