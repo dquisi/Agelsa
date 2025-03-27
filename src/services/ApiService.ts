@@ -9,10 +9,11 @@ export default class ApiService {
   private sectionId?: number;
   private resourceId?: number;
   private customPrompt?: string;
+  private moodleUrl?: string;
 
   constructor() {
     const params = new URLSearchParams(window.location.search);
-    this.baseUrl = process.env.VITE_AGENT_URL || "";
+    this.baseUrl = import.meta.env.VITE_AGENT_URL;
     this.token = params.get("token") || "default_token";
     this.userId = params.get("userId") || "default_user";
     this.courseId = Number(params.get("courseId")) || 0;
@@ -24,6 +25,7 @@ export default class ApiService {
       ? Number(params.get("resourceId"))
       : undefined;
     this.customPrompt = params.get("customPrompt") || undefined;
+    this.moodleUrl = params.get("moodleUrl") || undefined;
   }
 
   async convertAudioToText(audioBlob: Blob): Promise<string> {
