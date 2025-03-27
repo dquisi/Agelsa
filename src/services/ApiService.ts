@@ -54,10 +54,35 @@ export default class ApiService {
     }
   }
 
+  async uploadFile(file: File): Promise<any> {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("user", this.userId.toString());
+
+      const response = await fetch(`${this.baseUrl}/v1/files/upload`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${this.agentToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      throw error;
+    }
+  }
+
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
       const inputs: any = {
-        baseUrl: this.moodleUrl,
+        baseURL: this.moodleUrl,
         token: this.moodleToken,
         userid: this.userId,
         courseid: this.courseId,

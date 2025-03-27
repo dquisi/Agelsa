@@ -76,16 +76,19 @@ const toggleMute = () => {
   isMuted.value = !isMuted.value
 }
 
-const handleFileUpload = (event: Event) => {
+const handleFileUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files && input.files[0]) {
     const file = input.files[0]
-    const reader = new FileReader()
-    reader.onload = () => {
-      const fileMessage = { text: `File uploaded: ${file.name}`, isUser: true }
+    try {
+      await apiService.uploadFile(file)
+      const fileMessage = { text: `File uploaded successfully: ${file.name}`, isUser: true }
       emit('update:messages', [...props.messages, fileMessage])
+    } catch (error) {
+      const errorMessage = { text: `Error uploading file: ${file.name}`, isUser: true }
+      emit('update:messages', [...props.messages, errorMessage])
+      console.error('Error uploading file:', error)
     }
-    reader.readAsDataURL(file)
   }
 }
 
