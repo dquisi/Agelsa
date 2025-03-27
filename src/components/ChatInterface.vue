@@ -26,24 +26,21 @@
 
     <div class="input-container">
       <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none">
-      <div class="control-panel">
+      <div class="message-input">
+        <textarea
+          v-model="newMessage"
+          @keyup.enter="sendMessage"
+          placeholder="Type your message..."
+        ></textarea>
         <div class="action-buttons">
           <button class="icon-button" @click="toggleVoiceRecording" :class="{ 'active': isRecording }">
-            {{ isRecording ? '⏹️' : '🎤' }}
+            <i class="fas fa-microphone"></i>
           </button>
-          <button class="icon-button" @click="$refs.fileInput.click()">📎</button>
-          <button class="icon-button" @click="toggleMute">
-            {{ isMuted ? '🔇' : '🔊' }}
+          <button class="icon-button" @click="$refs.fileInput.click()">
+            <i class="fas fa-paperclip"></i>
           </button>
-        </div>
-        <div class="message-input">
-          <textarea
-            v-model="newMessage"
-            @keyup.enter="sendMessage"
-            placeholder="Type your message..."
-          ></textarea>
-          <button class="send-button" @click="sendMessage">
-            <span>Send</span>
+          <button class="icon-button" @click="sendMessage">
+            <i class="fas fa-paper-plane"></i>
           </button>
         </div>
       </div>
@@ -234,36 +231,33 @@ onMounted(scrollToBottom)
 }
 
 .icon-button {
-  padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: white;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #f0f7ff;
+  color: #0066cc;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
+  margin-left: 0.5rem;
 }
 
 .icon-button:hover {
-  background: #f8f9fa;
+  background: #e6f2ff;
+  transform: translateY(-1px);
 }
 
 .icon-button.active {
-  background: #e8f5e9;
-  border-color: #4caf50;
+  background: #e6f2ff;
+  color: #0066cc;
 }
 
-.send-button {
-  padding: 0.6rem 1.2rem;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.send-button:hover {
-  background: #43a047;
-  transform: translateY(-1px);
+.action-buttons {
+  display: flex;
+  align-items: center;
 }
 
 .message-input {
