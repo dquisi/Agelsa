@@ -1,9 +1,12 @@
 
 <template>
   <div class="app">
-    <button @click="toggleHistory" class="toggle-history-btn">
-      <i class="fas fa-bars"></i>
-    </button>
+    <div class="top-bar">
+      <AgentSelector @update:agent="updateAgent" />
+      <button @click="toggleHistory" class="toggle-history-btn">
+        <i class="fas fa-history"></i>
+      </button>
+    </div>
     <div class="sidebar" :class="{ 'hidden': !showHistory }">
       <div class="sidebar-header">
         <h3>Chat History</h3>
@@ -84,9 +87,26 @@ if (chatHistory.value.length === 0) {
 
 .app {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   background-color: #f8f9fa;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  z-index: 100;
+}
+
+.app > div:not(.top-bar) {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .sidebar {

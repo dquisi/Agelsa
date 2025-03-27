@@ -18,6 +18,9 @@
         >
           <i :class="isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash'"></i>
         </button>
+        <button @click="toggleMute" class="control-btn">
+          <i :class="['fas', isMuted ? 'fa-volume-mute' : 'fa-volume-up']"></i>
+        </button>
         <button @click="toggleAgentPopup" class="agent-select-btn">Select Agent</button>
       </div>
       <input 
@@ -26,26 +29,15 @@
         placeholder="Type your message..."
         class="message-input"
       />
-      <div class="button-group">
-        <button @click="generatePrompt" class="generate-btn">
-          <i class="fas fa-magic"></i> Generate
-        </button>
-        <button @click="sendMessage" class="send-btn">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-        <button class="control-btn" @click="toggleAudio" :class="{ active: isAudioEnabled }">
-          <i :class="isAudioEnabled ? 'fas fa-microphone' : 'fas fa-microphone-slash'"></i>
-        </button>
-      </div>
+      <button @click="$refs.fileInput.click()" class="attachment-btn">
+        <i class="fas fa-paperclip"></i>
+      </button>
       <input
         type="file"
         ref="fileInput"
         @change="handleFileUpload"
         style="display: none"
       />
-      <button @click="$refs.fileInput.click()" class="attachment-btn">
-        <i class="fas fa-paperclip"></i>
-      </button>
     </div>
     <transition name="popup">
       <div v-if="showAgentPopup" class="agent-popup">
@@ -70,6 +62,7 @@ const emit = defineEmits(['update:messages', 'update:agent'])
 
 const newMessage = ref('')
 const isAudioEnabled = ref(false)
+const isMuted = ref(false); // Added mute state
 const messagesContainer = ref<HTMLElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const showAgentPopup = ref(false)
@@ -78,6 +71,10 @@ const toggleAudio = () => {
   isAudioEnabled.value = !isAudioEnabled.value
   // Add audio toggling logic here if needed (e.g., play/pause sound)
 }
+
+const toggleMute = () => {
+  isMuted.value = !isMuted.value;
+};
 
 const sendMessage = async () => {
   if (!newMessage.value.trim()) return
@@ -189,9 +186,7 @@ watch(
 }
 
 .control-btn,
-.send-btn,
 .attachment-btn,
-.generate-btn,
 .agent-select-btn {
   padding: 0.75rem;
   border: none;
@@ -205,9 +200,7 @@ watch(
 }
 
 .control-btn:hover,
-.send-btn:hover,
 .attachment-btn:hover,
-.generate-btn:hover,
 .agent-select-btn:hover {
   background: #eee;
 }
@@ -217,23 +210,13 @@ watch(
   color: white;
 }
 
-.send-btn {
+.attachment-btn {
   background: #4CAF50;
   color: white;
 }
 
-.send-btn:hover {
+.attachment-btn:hover {
   background: #45a049;
-}
-
-.generate-btn {
-  background-color: #2196F3;
-  color: white;
-}
-
-.button-group {
-  display: flex;
-  gap: 0.5rem;
 }
 
 .agent-select-btn {
