@@ -4,39 +4,40 @@ import axios from 'axios'
 export default class ApiService {
   private baseUrl: string
   private token: string
-  private courseId: string
   private userId: string
-  private agentToken: string
 
   constructor() {
     const params = new URLSearchParams(window.location.search)
-    this.baseUrl = params.get('moodleUrl') || ''
-    this.token = params.get('moodleToken') || ''
-    this.courseId = params.get('courseId') || ''
+    this.baseUrl = params.get('moodleUrl') || 'http://agente.cedia.org.ec'
+    this.token = params.get('agentToken') || ''
     this.userId = params.get('userId') || ''
-    this.agentToken = params.get('agentToken') || ''
 
-    if (!this.baseUrl || !this.token || !this.courseId || !this.userId || !this.agentToken) {
+    if (!this.token || !this.userId) {
       throw new Error('Missing required URL parameters')
     }
   }
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
-      const response = await fetch(`${this.baseUrl}/chat`, {
+      const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`,
-          'X-Agent-Token': this.agentToken
+          'Authorization': `Bearer ${this.token}`
         },
         body: JSON.stringify({
-          message,
-          course_id: this.courseId,
-          user_id: this.userId,
-          stream: true
+          inputs: {},
+          query: message,
+          response_mode: "streaming",
+          conversation_id: "",
+          user: this.userId,
+          files: []
         })
       })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
       const reader = response.body?.getReader()
       if (!reader) throw new Error('No reader available')
