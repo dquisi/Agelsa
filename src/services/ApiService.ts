@@ -19,6 +19,31 @@ export default class ApiService {
     this.courseId = params.get('courseId') || ''
   }
 
+  async convertAudioToText(audioBlob: Blob): Promise<string> {
+    const formData = new FormData()
+    formData.append('file', audioBlob, 'recording.wav')
+
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      return data.text || ''
+    } catch (error) {
+      console.error('Error converting audio to text:', error)
+      throw error
+    }
+  }
+
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
       const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {

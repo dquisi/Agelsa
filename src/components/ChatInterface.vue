@@ -4,7 +4,7 @@
       <button class="icon-button" @click="toggleHistory">
         <i class="fas" :class="showHistory ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
       </button>
-      
+
     </div>
 
     <div class="messages" ref="messagesContainer" v-show="showHistory">
@@ -91,14 +91,30 @@ const handleFileUpload = (event: Event) => {
 
 watch(() => props.messages, scrollToBottom, { deep: true })
 
+let mediaRecorder: MediaRecorder | null = null
+let audioChunks: Blob[] = []
+
 const startRecording = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaRecorder = new MediaRecorder(stream)
     isRecording.value = true
+    audioChunks = []
 
-    mediaRecorder.ondataavailable = async (event) => {
-      const audioBlob = new Blob([event.data], { type: 'audio/wav' })
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunks.push(event.data)
+    }
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+      try {
+        const text = await apiService.convertAudioToText(audioBlob)
+        if (text) {
+          newMessage.value = text
+        }
+      } catch (err) {
+        console.error('Error converting audio to text:', err)
+      }
     }
 
     mediaRecorder.start()
@@ -153,7 +169,6 @@ const sendMessage = async () => {
   }
 }
 
-let mediaRecorder: MediaRecorder | null = null
 
 onMounted(scrollToBottom)
 </script>
