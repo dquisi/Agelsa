@@ -28,11 +28,14 @@
         </button>
       </div>
 
-      <div class="chat-controls">
+      <div class="controls-bar">
+        <button class="icon-btn" title="New message">
+          <i class="fas fa-message"></i>
+        </button>
         <button class="icon-btn" title="Voice">
           <i class="fas fa-microphone"></i>
         </button>
-        <button @click="toggleConfig" class="icon-btn" title="Settings">
+        <button class="icon-btn" title="Settings">
           <i class="fas fa-cog"></i>
         </button>
       </div>
@@ -159,12 +162,13 @@ if (chatHistory.value.length === 0) {
   color: #0066cc;
 }
 
-.chat-controls {
+.controls-bar {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  justify-content: center;
   background: #fff;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .main-container {
