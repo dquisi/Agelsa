@@ -33,11 +33,11 @@
         @update:messages="updateMessages" 
       />
 
-      <div class="actions">
-        <button class="icon-btn" title="Voice">
+      <div class="actions" style="position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; padding: 1rem; background: white; border-top: 1px solid #eee;">
+        <button class="icon-btn" title="Voice" style="margin: 0 0.5rem;">
           <i class="fas fa-microphone"></i>
         </button>
-        <button @click="toggleConfig" class="icon-btn" title="Settings">
+        <button @click="toggleConfig" class="icon-btn" title="Settings" style="margin: 0 0.5rem;">
           <i class="fas fa-cog"></i>
         </button>
       </div>
@@ -74,7 +74,10 @@ const loadChat = (index: number) => {
 }
 
 const updateMessages = (messages: Array<{text: string, isUser: boolean}>) => {
-  currentMessages.value = messages
+  currentMessages.value = [...messages]
+  if (!chatHistory.value[currentChatIndex.value]) {
+    chatHistory.value[currentChatIndex.value] = []
+  }
   chatHistory.value[currentChatIndex.value] = [...messages]
 }
 
