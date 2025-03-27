@@ -33,9 +33,9 @@ export default class ApiService {
   async convertAudioToText(audioBlob: Blob): Promise<string> {
     try {
       const formData = new FormData();
-      formData.append("audio", audioBlob);
+      formData.append("file", audioBlob);
 
-      const response = await fetch(`${this.baseUrl}/convert-audio`, {
+      const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
         method: "POST",
         body: formData,
         headers: {
