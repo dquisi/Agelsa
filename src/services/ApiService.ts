@@ -15,7 +15,7 @@ export default class ApiService {
   constructor() {
     const params = new URLSearchParams(window.location.search);
     this.baseUrl = import.meta.env.VITE_AGENT_URL || "";
-    this.agentToken = params.get("token") || "default_token";
+    this.agentToken = params.get("agentToken") || "default_token";
     this.moodleUrl = params.get("moodleUrl") || "";
     this.moodleToken = params.get("moodleToken") || "";
     this.userId = Number(params.get("userId")) || 1;
@@ -34,7 +34,6 @@ export default class ApiService {
     try {
       const formData = new FormData();
       formData.append("file", audioBlob);
-
       const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
         method: "POST",
         body: formData,
@@ -57,20 +56,26 @@ export default class ApiService {
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
-      const payload: any = {
-        message,
-        baseURL: this.moodleUrl,
+      const inputs: any = {
+        baseUrl: this.moodleUrl,
         token: this.moodleToken,
         userid: this.userId,
         courseid: this.courseId,
       };
-
-      if (this.customPrompt) payload.custom_prompt = this.customPrompt;
-      if (this.elsaToken) payload.elsatoken = this.elsaToken;
-      if (this.sectionId) payload.sectionid = this.sectionId;
-      if (this.resourceId) payload.resourceid = this.resourceId;
-
-      const response = await fetch(`${this.baseUrl}/v1/chat`, {
+      if (this.customPrompt) inputs.custom_prompt = this.customPrompt;
+      if (this.elsaToken) inputs.elsatoken = this.elsaToken;
+      if (this.sectionId) inputs.sectionid = this.sectionId;
+      if (this.resourceId) inputs.resourceid = this.resourceId;
+      const payload: any = {
+        inputs: inputs,
+        query: message,
+        response_mode: "streaming",
+        conversation_id: "",
+        user: this.userId.toString(),
+        files: [],
+      };
+      console.log(payload);
+      const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +83,7 @@ export default class ApiService {
         },
         body: JSON.stringify(payload),
       });
-
+      console.error(response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
