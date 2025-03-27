@@ -1,56 +1,55 @@
-
-import axios from 'axios'
+import axios from "axios";
 
 export default class ApiService {
-  private baseUrl: string
-  private token: string
-  private userId: string
-  private moodleUrl: string
-  private moodleToken: string
-  private courseId: string
+  private baseUrl: string;
+  private token: string;
+  private userId: string;
+  private moodleUrl: string;
+  private moodleToken: string;
+  private courseId: string;
 
   constructor() {
-    const params = new URLSearchParams(window.location.search)
-    this.baseUrl = 'http://agente.cedia.org.ec'
-    this.token = params.get('agentToken') || 'default_token'
-    this.userId = params.get('userId') || 'default_user'
-    this.moodleUrl = params.get('moodleUrl') || ''
-    this.moodleToken = params.get('moodleToken') || ''
-    this.courseId = params.get('courseId') || ''
+    const params = new URLSearchParams(window.location.search);
+    this.baseUrl = process.env.VITE_AGENT_URL || "";
+    this.token = params.get("agentToken") || "default_token";
+    this.userId = params.get("userId") || "default_user";
+    this.moodleUrl = params.get("moodleUrl") || "";
+    this.moodleToken = params.get("moodleToken") || "";
+    this.courseId = params.get("courseId") || "";
   }
 
   async convertAudioToText(audioBlob: Blob): Promise<string> {
-    const formData = new FormData()
-    formData.append('file', audioBlob, 'recording.wav')
+    const formData = new FormData();
+    formData.append("file", audioBlob, "recording.wav");
 
     try {
       const response = await fetch(`${this.baseUrl}/v1/audio-to-text`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.token}`
+          Authorization: `Bearer ${this.token}`,
         },
-        body: formData
-      })
+        body: formData,
+      });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json()
-      return data.text || ''
+      const data = await response.json();
+      return data.text || "";
     } catch (error) {
-      console.error('Error converting audio to text:', error)
-      throw error
+      console.error("Error converting audio to text:", error);
+      throw error;
     }
   }
 
   async sendMessageStream(message: string, onChunk: (chunk: string) => void) {
     try {
       const response = await fetch(`${this.baseUrl}/v1/chat-messages`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({
           inputs: {},
@@ -58,27 +57,27 @@ export default class ApiService {
           response_mode: "streaming",
           conversation_id: "",
           user: this.userId,
-          files: []
-        })
-      })
+          files: [],
+        }),
+      });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No reader available')
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader available");
 
       while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        
-        const chunk = new TextDecoder().decode(value)
-        onChunk(chunk)
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        onChunk(chunk);
       }
     } catch (error) {
-      console.error('Error in streaming:', error)
-      throw error
+      console.error("Error in streaming:", error);
+      throw error;
     }
   }
 }
