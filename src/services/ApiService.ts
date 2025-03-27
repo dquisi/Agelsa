@@ -5,12 +5,18 @@ export default class ApiService {
   private baseUrl: string
   private token: string
   private userId: string
+  private moodleUrl: string
+  private moodleToken: string
+  private courseId: string
 
   constructor() {
     const params = new URLSearchParams(window.location.search)
-    this.baseUrl = params.get('moodleUrl') || 'http://agente.cedia.org.ec'
+    this.baseUrl = 'http://agente.cedia.org.ec'
     this.token = params.get('agentToken') || ''
     this.userId = params.get('userId') || ''
+    this.moodleUrl = params.get('moodleUrl') || ''
+    this.moodleToken = params.get('moodleToken') || ''
+    this.courseId = params.get('courseId') || ''
 
     if (!this.token || !this.userId) {
       throw new Error('Missing required URL parameters')

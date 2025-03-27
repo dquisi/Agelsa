@@ -124,26 +124,7 @@ const toggleVoiceRecording = () => {
 }
 
 
-class ApiService {
-  async sendMessageStream(message: string, callback: (chunk: string) => void) {
-    try {
-      const apiService = new ApiService()
-      await apiService.sendMessageStream(message, callback)
-
-      const reader = response.data.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = new TextDecoder("utf-8").decode(value);
-        callback(chunk);
-      }
-    } catch (error) {
-      console.error("Error in ApiService sendMessageStream: ", error);
-      throw error; // Re-throw to be caught in sendMessage
-    }
-  }
-}
-
+import ApiService from '../services/ApiService'
 const apiService = new ApiService()
 const currentStreamingMessage = ref('')
 
